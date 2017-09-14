@@ -96,14 +96,7 @@ void Socks5TransmitState::createRemoteConnection(TCPConnection *ctx) {
 }
 
 void Socks5TransmitState::onSignalEvent(int fd, short what, void *arg) {
-//    if (this->mLocalConnection != nullptr) {
-//        this->mLocalConnection->close();
-//        this->mLocalConnection->stop();
-//    }
-//    if (this->mRemoteConnection != nullptr) {
-//        this->mRemoteConnection->close();
-//        this->mRemoteConnection->stop();
-//    }
+    
 }
 
 //local - > P -> remote eof
@@ -127,8 +120,9 @@ void Socks5TransmitState::feed(ProtocolSyntax::EventType type, InputStream *inpu
         unsigned char *rdbuf = new unsigned char[rdl];
         memset(rdbuf, 0, rdl);
         inputStream->read(rdbuf, rdl);
-        
-        this->mRemoteConnection->getOutputStream()->write(rdbuf, rdl);
+        if (this->mRemoteConnection != nullptr) {
+            this->mRemoteConnection->getOutputStream()->write(rdbuf, rdl);
+        }
         delete [] rdbuf;
     }
     
