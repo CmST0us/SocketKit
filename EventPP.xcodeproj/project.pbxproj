@@ -147,7 +147,7 @@
 			path = test_somethine;
 			sourceTree = "<group>";
 		};
-		4F0B34621F5FAFE4007ACCF6 /* ProtolSyntax */ = {
+		4F0B34621F5FAFE4007ACCF6 /* ProtocolSyntax */ = {
 			isa = PBXGroup;
 			children = (
 				4F0B345F1F5FAFDA007ACCF6 /* ProtocolSyntax.cpp */,
@@ -156,7 +156,7 @@
 				4FC591DB1F643574002DB17B /* Custom */,
 				4F0B34691F5FE48B007ACCF6 /* EchoProtocol */,
 			);
-			path = ProtolSyntax;
+			path = ProtocolSyntax;
 			sourceTree = "<group>";
 		};
 		4F0B34691F5FE48B007ACCF6 /* EchoProtocol */ = {
@@ -226,7 +226,7 @@
 				4FC64E1C1F5D8A190030CE92 /* SocketAddress.hpp */,
 				4FC64E1E1F5D8A2C0030CE92 /* EventCallbackInterface.cpp */,
 				4FC64E1F1F5D8A2C0030CE92 /* EventCallbackInterface.hpp */,
-				4F0B34621F5FAFE4007ACCF6 /* ProtolSyntax */,
+				4F0B34621F5FAFE4007ACCF6 /* ProtocolSyntax */,
 				4FC64E3C1F5D8AC90030CE92 /* TCP */,
 				4FC64E3D1F5D8ACF0030CE92 /* UDP */,
 				4FC64E3E1F5D8ADA0030CE92 /* Stream */,
