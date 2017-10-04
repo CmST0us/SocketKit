@@ -30,6 +30,10 @@ public:
     static SocketException connectListenerCreateError;
     static SocketException connectError;
     static SocketException socks5UnsupportStateError;
+    static SocketException socksFdInitError;
+    static SocketException socksBindError;
+    static SocketException eventInitError;
+    static SocketException eventAddError;
 };
 
 

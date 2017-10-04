@@ -51,6 +51,8 @@ public:
 //状态机消息传递
     virtual void onSignalEvent(int fd, short what, void *arg) {};
     virtual void onEOFEvent(void *ctx) {};
+    virtual void onWillEndWrite(void *ctx) {};
+    virtual void onWillEndRead(void *ctx) {};
     virtual void feed(ProtocolSyntax::EventType type, InputStream *inputStream, OutputStream *outputStream, void *ctx) {};
 };
 }

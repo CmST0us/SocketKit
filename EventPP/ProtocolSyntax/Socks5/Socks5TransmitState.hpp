@@ -16,11 +16,15 @@ namespace ts {
     
 class Socks5TransmitState: public Socks5State {
 private:
+    int mRemoteEndFlag = 0;
+    int mLocalEndFlag = 0;
     std::string mRemoteHost;
     std::string mRemotePort;
     
     TCPConnection *mRemoteConnection = nullptr;
     TCPConnection *mLocalConnection = nullptr;
+    
+    void tryEndConnection();
 public:
     void setRemoteHost(std::string host) {
         this->mRemoteHost = host;
@@ -44,6 +48,8 @@ public:
     virtual void handle(Socks5State::SOCKS5_STATE state) override;
     virtual void onSignalEvent(int fd, short what, void *arg) override;
     virtual void onEOFEvent(void *ctx) override;
+    virtual void onWillEndRead(void *ctx) override;
+    virtual void onWillEndWrite(void *ctx) override;
     virtual void feed(ProtocolSyntax::EventType type, InputStream *inputStream, OutputStream *outputStream, void *ctx) override;
 };
     

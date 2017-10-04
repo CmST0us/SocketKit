@@ -21,7 +21,7 @@
 #include "EvBufferAdapter.hpp"
 #include "TCPConnectionFactory.hpp"
 #include "Socks5ProtocolSyntaxAdapter.hpp"
-
+#include "UDPServer.hpp"
 using namespace ts;
 using namespace std;
 void test_SocketAddress() {
@@ -44,7 +44,7 @@ void test_SocketAddress() {
     }
 }
     
-void test_TCPServer() {
+void test_TCPServer_ConsoleEcho() {
     ts::TCPServer server(12000);
     server.setup();
     auto syntaxer = std::shared_ptr<ts::ConsoleEchoProtocolSyntaxAdapter>(new ts::ConsoleEchoProtocolSyntaxAdapter);
@@ -404,11 +404,18 @@ void test_multiEventBase() {
 void signal_handle(int f) {
     
 }
+
+
+void test_UDPServer() {
+    auto server = new UDPServer(12001);
+    server->setup();
+    server->start();
+}
 int main(int argc, const char * argv[]) {
     std::cout << "Hello, World!\n";
-     signal(SIGPIPE, signal_handle);
+     signal(SIGPIPE, SIG_IGN);
 //    test_SocketAddress();
-//    test_TCPServer();
+//    test_TCPServer_ConsoleEcho();
 //    test_TCPConnection();
 //    test_TCPConnection_CustomHandle();
 //    test_Sock5ToSSServer();  //[TODO] Stream share pointer fix
@@ -419,7 +426,7 @@ int main(int argc, const char * argv[]) {
 //    test_LongLink();
     test_Socks5Proxy();
 //    test_multiEventBase();
-    
+//    test_UDPServer();
 //
     return 0;
 }

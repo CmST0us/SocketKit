@@ -50,14 +50,33 @@ void Socks5TransmitState::createRemoteConnection(TCPConnection *ctx) {
     
     customSyntax->mOnEOFEventHandler = [&](void *ctx) {
 //        remote - > P -> local eof
+        
+        //[TODO] add a flag to check wethere socket fd is closed
         this->mLocalConnection->shutdown(SHUT_RD);
         this->mRemoteConnection->shutdown(SHUT_WR);
+        this->mRemoteEndFlag = 1;
+        
+        this->tryEndConnection();
     };
     
-    customSyntax->mOnSignalEventHandler = [&](int fd, short what, void *arg) {
-        printf("remote signal\n");
+    customSyntax->mWillEndWriteHandler = [&](void *ctx) {
+        //SIGPIPE
+        this->mRemoteConnection->shutdown(SHUT_RDWR);
         this->mRemoteConnection->close();
         this->mRemoteConnection->stop();
+        this->mLocalConnection->shutdown(SHUT_RDWR);
+        this->mLocalConnection->close();
+        this->mLocalConnection->stop();
+        auto localContext = (TCPServer *)this->mLocalConnection->getContext();
+        localContext->removeConnectionWithKey(this->mClientKey);
+    };
+    
+    customSyntax->mWillEndReadHandler = [&](void *ctx) {
+        //READ ERROR
+        this->mRemoteConnection->shutdown(SHUT_RDWR);
+        this->mRemoteConnection->close();
+        this->mRemoteConnection->stop();
+        this->mLocalConnection->shutdown(SHUT_RDWR);
         this->mLocalConnection->close();
         this->mLocalConnection->stop();
         auto localContext = (TCPServer *)this->mLocalConnection->getContext();
@@ -68,8 +87,6 @@ void Socks5TransmitState::createRemoteConnection(TCPConnection *ctx) {
         //   (触发)
         // R -> P -> L
         auto outputStream = this->mLocalConnection->getOutputStream();
-        auto inputStream = this->mLocalConnection->getInputStream();
-        
         int inputLen = (int)input->length();
         if (inputLen > 0) {
             unsigned char *inputBuffer = new unsigned char[inputLen];
@@ -95,6 +112,14 @@ void Socks5TransmitState::createRemoteConnection(TCPConnection *ctx) {
     }).detach();
 }
 
+void Socks5TransmitState::tryEndConnection() {
+    if (this->mLocalEndFlag && this->mRemoteEndFlag) {
+        this->mRemoteConnection->close();
+        this->mLocalConnection->close();
+        this->mLocalConnection->stop();
+        this->mRemoteConnection->stop();
+    }
+}
 void Socks5TransmitState::onSignalEvent(int fd, short what, void *arg) {
     
 }
@@ -103,6 +128,33 @@ void Socks5TransmitState::onSignalEvent(int fd, short what, void *arg) {
 void Socks5TransmitState::onEOFEvent(void *ctx) {
     this->mRemoteConnection->shutdown(SHUT_WR);
     this->mLocalConnection->shutdown(SHUT_RD);
+    this->mLocalEndFlag = 1;
+    
+    tryEndConnection();
+}
+
+void Socks5TransmitState::onWillEndWrite(void *ctx) {
+    //SIGPIPE
+    this->mRemoteConnection->shutdown(SHUT_RDWR);
+    this->mRemoteConnection->close();
+    this->mRemoteConnection->stop();
+    this->mLocalConnection->shutdown(SHUT_RDWR);
+    this->mLocalConnection->close();
+    this->mLocalConnection->stop();
+    auto localContext = (TCPServer *)this->mLocalConnection->getContext();
+    localContext->removeConnectionWithKey(this->mClientKey);
+}
+
+void Socks5TransmitState::onWillEndRead(void *ctx) {
+    //READ ERROR
+    this->mRemoteConnection->shutdown(SHUT_RDWR);
+    this->mRemoteConnection->close();
+    this->mRemoteConnection->stop();
+    this->mLocalConnection->shutdown(SHUT_RDWR);
+    this->mLocalConnection->close();
+    this->mLocalConnection->stop();
+    auto localContext = (TCPServer *)this->mLocalConnection->getContext();
+    localContext->removeConnectionWithKey(this->mClientKey);
 }
 
 void Socks5TransmitState::feed(ProtocolSyntax::EventType type, InputStream *inputStream, OutputStream *outputStream, void *ctx) {

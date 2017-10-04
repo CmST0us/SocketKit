@@ -22,7 +22,12 @@ void ConsoleEchoProtocolSyntaxAdapter::feed(ProtocolSyntax::EventType type, ts::
     std::stringstream ss;
     auto addr = (TCPConnection *)ctx;
     ss<<"["<<addr->getSocketAddress().ipPortPairString().c_str()<<"]"<<" recv: "<<buf<<std::endl;
-    outputStream->write(ss.str().c_str(), ss.str().length());
+    for (int p = 0; p < 10; p++) {
+        outputStream->write(ss.str().c_str(), ss.str().length());
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    
+    
     delete [] buf;
 }
 ConsoleEchoProtocolSyntaxAdapter::~ConsoleEchoProtocolSyntaxAdapter() {

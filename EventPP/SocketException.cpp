@@ -16,3 +16,11 @@ SocketException::connectListenerCreateError(10001, "Cannot create listener socke
 SocketException SocketException::connectError(10002, "Cannot connet target");
 
 SocketException SocketException::socks5UnsupportStateError(9001, "Socks5 client change to unsupport state");
+
+SocketException SocketException::socksFdInitError(10003, "Cannot init socket fd");
+
+SocketException SocketException::socksBindError(10004, "Cannot bind socket");
+
+SocketException SocketException::eventInitError(11001, "Cannot init an event");
+
+SocketException SocketException::eventAddError(11002, "Cannot add an event");

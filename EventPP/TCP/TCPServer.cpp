@@ -39,7 +39,7 @@ static void readCallback(struct bufferevent *bev, void *ptr) {
 
 static void writeCallback(struct bufferevent *bev, void *ptr) {
     auto ctx = (TCPConnection *)ptr;
-    ctx->onReadableEvent(bev, ptr);
+    ctx->onWriteableEvent(bev, ptr);
 }
 
 static void eventCallback(struct bufferevent *bev, short events, void *ptr) {
@@ -48,9 +48,9 @@ static void eventCallback(struct bufferevent *bev, short events, void *ptr) {
     auto server = (TCPServer *)ctx->getContext();
     if (events & BEV_EVENT_ERROR) {
         if (events & BEV_EVENT_READING) {
-            connection->onReadError();
+            connection->onReadError();// 对端强制结束！
         } else if (events & BEV_EVENT_WRITING) {
-            connection->onWriteError();
+            connection->onWriteError();// 对端结束后写入，发生SIGPIPE!// 管道破裂
         } else {
             if (connection != nullptr && server != nullptr) {
                 server->removeConnectionWithKey(connection->getSocketAddress().ipPortPairString());

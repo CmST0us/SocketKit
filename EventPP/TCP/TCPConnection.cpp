@@ -76,6 +76,7 @@ TCPConnection::TCPConnection(std::string hostname, std::string portString) {
 }
 
 TCPConnection::~TCPConnection() {
+    std::cout<<"Connection:"<<this->mSocketAddress.getIpString()<<" 释放\n";
 //evbuffer被bufferevent引用，由bufferevent释放evbuffer
     if (this->mBufferEvent != nullptr) {
         bufferevent_free(this->mBufferEvent);
@@ -169,14 +170,30 @@ void TCPConnection::stop() {
 
 void TCPConnection::close() {
     if (this->mBufferEvent != nullptr) {
+        bufferevent_disable(this->mBufferEvent, EV_READ | EV_WRITE);
         evutil_closesocket(bufferevent_getfd(this->mBufferEvent));
     }
 }
 
 void TCPConnection::shutdown(int how) {
     if (this->mBufferEvent != nullptr) {
-        int fd = bufferevent_getfd(this->mBufferEvent);
-        ::shutdown(fd, how);
+        auto fd = bufferevent_getfd(this->mBufferEvent);
+        switch (how) {
+            case SHUT_RD:
+                bufferevent_disable(this->mBufferEvent, EV_READ);
+                ::shutdown(fd, SHUT_RD);
+                break;
+            case SHUT_WR:
+                bufferevent_disable(this->mBufferEvent, EV_WRITE);
+                ::shutdown(fd, SHUT_WR);
+                break;
+            case SHUT_RDWR:
+                bufferevent_disable(this->mBufferEvent, EV_WRITE | EV_READ);
+                ::shutdown(fd, SHUT_RDWR);
+                break;
+            default:
+                break;
+        }
     }
 }
 

@@ -22,9 +22,9 @@ Socks5ProtocolSyntaxAdapter::~Socks5ProtocolSyntaxAdapter() {
 }
 
 void Socks5ProtocolSyntaxAdapter::onSignalEvent(int fd, short what, void *arg) {
-    auto localToProxyConnection = (TCPConnection *)arg;
-    auto key = localToProxyConnection->getSocketAddress().ipPortPairString();
-    this->mClientState[key]->onSignalEvent(fd, what, arg);
+//    auto localToProxyConnection = (TCPConnection *)arg;
+//    auto key = localToProxyConnection->getSocketAddress().ipPortPairString();
+//    this->mClientState[key]->onSignalEvent(fd, what, arg);
 }
 
 void Socks5ProtocolSyntaxAdapter::onError(void *ctx) {
@@ -42,11 +42,16 @@ void Socks5ProtocolSyntaxAdapter::onWriteable(void *ctx) {
 }
 
 void Socks5ProtocolSyntaxAdapter::willEndRead(void *ctx) {
-    
+    auto localToProxyConnection = (TCPConnection *)ctx;
+    auto key = localToProxyConnection->getSocketAddress().ipPortPairString();
+    this->mClientState[key]->onWillEndRead(ctx);
 }
 
 void Socks5ProtocolSyntaxAdapter::willEndWrite(void *ctx) {
-    
+    auto localToProxyConnection = (TCPConnection *)ctx;
+    auto key = localToProxyConnection->getSocketAddress().ipPortPairString();
+    this->mClientState[key]->onWillEndWrite(ctx);
+
 }
 
 
