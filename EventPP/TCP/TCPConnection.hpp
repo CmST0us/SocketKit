@@ -13,6 +13,7 @@
 
 #include <event2/event.h>
 #include <event2/bufferevent.h>
+#include <evutil.h>
 
 #include "SocketAddress.hpp"
 #include "Stream.hpp"
@@ -28,6 +29,8 @@ private:
     SocketAddress mSocketAddress;
     struct event_base* mEventBase = nullptr;
     struct bufferevent* mBufferEvent = nullptr;
+    
+    evutil_socket_t mSocketFd = -1;
     
     std::unique_ptr<InputStream> mInputStream;
     std::unique_ptr<OutputStream> mOutputStream;

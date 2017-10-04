@@ -85,24 +85,24 @@ bool SocketAddress::setupResolveHost(std::string hostname) {
     }
     if (this->mEventDnsBase == nullptr) {
         this->mEventDnsBase = evdns_base_new(this->mEventBase, EVDNS_BASE_INITIALIZE_NAMESERVERS);
+        evdns_base_set_option(this->mEventDnsBase, "timeout", "0.2");
     }
     
     struct evutil_addrinfo hints;
     struct evdns_getaddrinfo_request *req;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
-    hints.ai_flags = EVUTIL_AI_CANONNAME;
+    hints.ai_flags = EVUTIL_AI_ADDRCONFIG;
     /* Unless we specify a socktype, we'll get at least two entries for
      * each address: one for TCP and one for UDP. That's not what we
      * want. */
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
    this->mHostname = hostname;
     req = evdns_getaddrinfo(
                             this->mEventDnsBase, hostname.c_str(), NULL,
                             &hints, callback, this);
-    if (req == NULL) {
+    if (req == nullptr) {
         this->setIp(hostname);
     }
     return true;

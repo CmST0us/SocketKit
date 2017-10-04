@@ -25,17 +25,8 @@ public:
     
 protected:
     Socks5ProtocolSyntaxAdapter *mSocks5Context;
-//    TCPConnection *mConnectionContext;
     std::string mClientKey;
 public:
-//    TCPConnection *getConnectionContext() {
-//        return this->mConnectionContext;
-//    }
-//    
-//    void setConnectionContext(TCPConnection *ctx) {
-//        this->mConnectionContext = ctx;
-//    }
-//    
     Socks5State() {
         
     };

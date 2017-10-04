@@ -28,7 +28,7 @@ void test_SocketAddress() {
     try {
         auto start = std::chrono::system_clock::now();
         
-        auto address = ts::SocketAddress("www.baidu.com", 80);
+        auto address = ts::SocketAddress("www.asdf.cdasc", 80);
         address.waitForResolveFinish();
         auto end = std::chrono::system_clock::now();
         auto dur = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
@@ -365,7 +365,7 @@ void test_ShortLink() {
         delete conection;
         sndBuf.free();
     }
-    while(1);
+//    while(1);
 }
 void test_LongLink() {
     auto longConnection = TCPConnectionFactory::longLinkTCPConnection();

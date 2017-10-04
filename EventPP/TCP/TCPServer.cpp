@@ -206,6 +206,7 @@ void TCPServer::onAcceptEvent(struct evconnlistener *listener, int fd, struct so
     connection->mOutputStream = std::move(outputStream);
     connection->mContext = this;
     connection->setProtocolSyntax(this->mSyntax);
+    connection->mSocketFd = fd;
     
     auto key = connection->mSocketAddress.ipPortPairString();
     this->setConnectionWithKey(key, connection);

@@ -45,21 +45,32 @@ TCPConnection * TCPConnectionFactory::shortLinkTCPConnection(Buffer &buffer) {
         }
     };
     customSyntaxAdapter->mWillEndWriteHandler = [&](void *ctx) {
-        
+        auto c = (TCPConnection *)ctx;
+        c->shutdown(SHUT_RDWR);
+        c->close();
+        c->stop();
     };
     
     customSyntaxAdapter->mWillEndReadHandler = [&](void *ctx) {
-        
+        auto c = (TCPConnection *)ctx;
+        c->shutdown(SHUT_RDWR);
+        c->close();
+        c->stop();
     };
     
     customSyntaxAdapter->mOnErrorHandler = [&](void *ctx) {
         auto c = (TCPConnection *)ctx;
+        c->shutdown(SHUT_RDWR);
         c->close();
+        c->stop();
+        
     };
     
     customSyntaxAdapter->mOnEOFEventHandler = [&](void *ctx) {
         auto c = (TCPConnection *)ctx;
+        c->shutdown(SHUT_RDWR);
         c->close();
+        c->stop();
     };
     
     

@@ -76,7 +76,7 @@ TCPConnection::TCPConnection(std::string hostname, std::string portString) {
 }
 
 TCPConnection::~TCPConnection() {
-    std::cout<<"Connection:"<<this->mSocketAddress.getIpString()<<" 释放\n";
+    std::cout<<"Connection:"<<this->mSocketAddress.ipPortPairString()<<" 释放\n";
 //evbuffer被bufferevent引用，由bufferevent释放evbuffer
     if (this->mBufferEvent != nullptr) {
         bufferevent_free(this->mBufferEvent);
@@ -133,6 +133,7 @@ void TCPConnection::connect() {
     event_add(event, nullptr);
     
     this->mBufferEvent = bufferevent_socket_new(this->mEventBase, -1, BEV_OPT_THREADSAFE|BEV_OPT_CLOSE_ON_FREE);
+    this->mSocketFd = bufferevent_getfd(this->mBufferEvent);
     
     auto inputBufferAdapter = std::unique_ptr<Buffer>(new EvBufferAdapter(bufferevent_get_input(this->mBufferEvent)));
     auto outputBufferAdapter = std::unique_ptr<Buffer>(new EvBufferAdapter(bufferevent_get_output(this->mBufferEvent)));
@@ -149,7 +150,7 @@ void TCPConnection::connect() {
     }
     bufferevent_setcb(this->mBufferEvent, readCallback, writeCallback, buffereventCallback, this);
     bufferevent_enable(this->mBufferEvent, EV_WRITE | EV_READ | EV_CLOSED | EV_SIGNAL);
-    
+
     auto addr = this->mSocketAddress.getSockaddrIn();
     if (-1 == bufferevent_socket_connect(this->mBufferEvent, (struct sockaddr*)&addr, sizeof(addr))) {
         throw SocketException::connectError;
@@ -170,14 +171,14 @@ void TCPConnection::stop() {
 
 void TCPConnection::close() {
     if (this->mBufferEvent != nullptr) {
-        bufferevent_disable(this->mBufferEvent, EV_READ | EV_WRITE);
-        evutil_closesocket(bufferevent_getfd(this->mBufferEvent));
+//        bufferevent_disable(this->mBufferEvent, EV_READ | EV_WRITE);
+        evutil_closesocket(this->mSocketFd);
     }
 }
 
 void TCPConnection::shutdown(int how) {
     if (this->mBufferEvent != nullptr) {
-        auto fd = bufferevent_getfd(this->mBufferEvent);
+        auto fd = this->mSocketFd;
         switch (how) {
             case SHUT_RD:
                 bufferevent_disable(this->mBufferEvent, EV_READ);
