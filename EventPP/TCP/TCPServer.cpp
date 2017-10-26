@@ -58,6 +58,11 @@ static void eventCallback(struct bufferevent *bev, short events, void *ptr) {
         }
     } else if (events & BEV_EVENT_EOF) {
         connection->onEOFEvent();
+    } else if (events & BEV_EVENT_TIMEOUT) {
+        connection->disable(EV_WRITE | EV_READ);
+        connection->stop();
+        connection->close();
+        server->removeConnectionWithKey(connection->getSocketAddress().ipPortPairString());
     }
     
 }
@@ -116,34 +121,34 @@ void TCPServer::setProtocolSyntax(std::shared_ptr<ProtocolSyntax> syntax) {
 }
 
 TCPConnection * TCPServer::getConnectionWithKey(std::string s) {
-    clientMapLock.lock();
+//    clientMapLock.lock();
     TCPConnection *c;
     if (this->mClients.count(s) != 0) {
         c = this->mClients[s];
     } else {
         c = nullptr;
     }
-    clientMapLock.unlock();
+//    clientMapLock.unlock();
     return c;
 }
 
 void TCPServer::setConnectionWithKey(std::string s, TCPConnection *connection) {
-    clientMapLock.lock();
+//    clientMapLock.lock();
     
     this->mClients[s] = connection;
     
-    clientMapLock.unlock();
+//    clientMapLock.unlock();
 }
 
 void TCPServer::removeConnectionWithKey(std::string s) {
-    clientMapLock.lock();
+//    clientMapLock.lock();
     
     auto &&c = this->mClients[s];
     delete c;
     c = nullptr;
 //    this->mClients.erase(s);
     
-    clientMapLock.unlock();
+//    clientMapLock.unlock();
 }
 
 ProtocolSyntax* TCPServer::getProtocolSyntax() {
@@ -158,7 +163,7 @@ bool TCPServer::setup() {
     socklen_t socklen = sizeof(addr);
     addr = this->mSocketAddress.getSockaddrIn();
     this->mListener = evconnlistener_new_bind(this->mEventBase, acceptCallback, this,
-                                       LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE|LEV_OPT_THREADSAFE, -1,
+                                       LEV_OPT_REUSEABLE|LEV_OPT_THREADSAFE, -1,
                                        (struct sockaddr*)&addr, sizeof(addr));
     int fd = evconnlistener_get_fd(this->mListener);
     getsockname(fd, (struct sockaddr *)&addr, &socklen);
@@ -184,17 +189,22 @@ void TCPServer::stop() {
 
 void TCPServer::onAcceptEvent(struct evconnlistener *listener, int fd, struct sockaddr *address, int socklen, void *ctx) {
     auto eventBase = evconnlistener_get_base(listener);
-    auto bev = bufferevent_socket_new(eventBase, fd, BEV_OPT_CLOSE_ON_FREE|BEV_OPT_THREADSAFE);
+    auto bev = bufferevent_socket_new(eventBase, fd, BEV_OPT_THREADSAFE);
     struct sockaddr_in addrIn = *(sockaddr_in *)address;
     
     auto connection = new TCPConnection();
     bufferevent_setcb(bev, readCallback, writeCallback, eventCallback, connection);
-    bufferevent_enable(bev, EV_READ | EV_WRITE | EV_SIGNAL | EV_CLOSED);
+    bufferevent_enable(bev, EV_READ | EV_WRITE);
     
     connection->mEventBase = nullptr;
     connection->mBufferEvent = bev;
     connection->mSocketAddress.setIp(std::string(inet_ntoa(addrIn.sin_addr)));
     connection->mSocketAddress.setPort(ntohs(addrIn.sin_port));
+    
+    struct timeval timeout;
+    timeout.tv_sec = 6;
+    timeout.tv_usec = 0;
+    connection->setTimeout(&timeout, &timeout);
     
     auto inputBufferAdapter = std::unique_ptr<Buffer>(new EvBufferAdapter(bufferevent_get_input(bev)));
     auto outputBufferAdapter = std::unique_ptr<Buffer>(new EvBufferAdapter(bufferevent_get_output(bev)));

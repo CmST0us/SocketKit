@@ -424,6 +424,9 @@ int main(int argc, const char * argv[]) {
 //    test_socket_state();
 //    test_ShortLink();
 //    test_LongLink();
+    
+    
+#warning SIGPIPE shutdown套接字导致重复发送FIN卡死bufferevent
     test_Socks5Proxy();
 //    test_multiEventBase();
 //    test_UDPServer();

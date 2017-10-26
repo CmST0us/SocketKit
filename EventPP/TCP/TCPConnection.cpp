@@ -41,6 +41,10 @@ static void buffereventCallback(struct bufferevent *bev, short events, void *ptr
         }
     } else if (events & BEV_EVENT_EOF) {
         ctx->onEOFEvent();
+    } else if (events & BEV_EVENT_TIMEOUT) {
+        ctx->disable(EV_WRITE | EV_READ);
+        ctx->close();
+        ctx->stop();
     }
 }
 
@@ -115,6 +119,9 @@ ProtocolSyntax* TCPConnection::getProtocolSyntax() {
     return this->mSyntax.get();
 }
 
+void TCPConnection::setTimeout(struct timeval *readTimeout, struct timeval *writeTimeout) {
+    bufferevent_set_timeouts(this->mBufferEvent, readTimeout, writeTimeout);
+}
 void TCPConnection::connect(std::string hostname, std::string portString) {
     this->connect(hostname, atoi(portString.c_str()));
 }
@@ -129,8 +136,8 @@ void TCPConnection::connect(std::string hostname, short port) {
 
 void TCPConnection::connect() {
     this->mEventBase = event_base_new();
-    auto event = evsignal_new(this->mEventBase, SIGPIPE, signalCallback, this);
-    event_add(event, nullptr);
+//    auto event = evsignal_new(this->mEventBase, SIGPIPE, signalCallback, this);
+//    event_add(event, nullptr);
     
     this->mBufferEvent = bufferevent_socket_new(this->mEventBase, -1, BEV_OPT_THREADSAFE|BEV_OPT_CLOSE_ON_FREE);
     this->mSocketFd = bufferevent_getfd(this->mBufferEvent);
@@ -149,7 +156,7 @@ void TCPConnection::connect() {
         return;
     }
     bufferevent_setcb(this->mBufferEvent, readCallback, writeCallback, buffereventCallback, this);
-    bufferevent_enable(this->mBufferEvent, EV_WRITE | EV_READ | EV_CLOSED | EV_SIGNAL);
+    bufferevent_enable(this->mBufferEvent, EV_WRITE | EV_READ);
 
     auto addr = this->mSocketAddress.getSockaddrIn();
     if (-1 == bufferevent_socket_connect(this->mBufferEvent, (struct sockaddr*)&addr, sizeof(addr))) {
@@ -171,7 +178,6 @@ void TCPConnection::stop() {
 
 void TCPConnection::close() {
     if (this->mBufferEvent != nullptr) {
-//        bufferevent_disable(this->mBufferEvent, EV_READ | EV_WRITE);
         evutil_closesocket(this->mSocketFd);
     }
 }
@@ -181,16 +187,16 @@ void TCPConnection::shutdown(int how) {
         auto fd = this->mSocketFd;
         switch (how) {
             case SHUT_RD:
-                bufferevent_disable(this->mBufferEvent, EV_READ);
                 ::shutdown(fd, SHUT_RD);
+                bufferevent_disable(this->mBufferEvent, EV_READ);
                 break;
             case SHUT_WR:
-                bufferevent_disable(this->mBufferEvent, EV_WRITE);
                 ::shutdown(fd, SHUT_WR);
+                bufferevent_disable(this->mBufferEvent, EV_WRITE);
                 break;
             case SHUT_RDWR:
-                bufferevent_disable(this->mBufferEvent, EV_WRITE | EV_READ);
                 ::shutdown(fd, SHUT_RDWR);
+                bufferevent_disable(this->mBufferEvent, EV_WRITE | EV_READ);
                 break;
             default:
                 break;
@@ -198,6 +204,23 @@ void TCPConnection::shutdown(int how) {
     }
 }
 
+void TCPConnection::disable(int how) {
+    if (this->mBufferEvent != nullptr) {
+        switch (how) {
+            case EV_READ:
+                bufferevent_disable(this->mBufferEvent, EV_READ);
+                break;
+            case EV_WRITE:
+                bufferevent_disable(this->mBufferEvent, EV_WRITE);
+                break;
+            case EV_WRITE | EV_READ:
+                bufferevent_disable(this->mBufferEvent, EV_WRITE | EV_READ);
+                break;
+            default:
+                break;
+        }
+    }
+}
 void TCPConnection::onSignalEvent(int fd, short what, void *arg) {
     this->mSyntax.get()->onSignalEvent(fd, what, arg);
 }

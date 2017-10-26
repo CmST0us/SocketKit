@@ -48,7 +48,6 @@ public:
     virtual void handle(Socks5State::SOCKS5_STATE state) override;
     virtual void onSignalEvent(int fd, short what, void *arg) override;
     virtual void onEOFEvent(void *ctx) override;
-    virtual void onWillEndRead(void *ctx) override;
     virtual void onWillEndWrite(void *ctx) override;
     virtual void feed(ProtocolSyntax::EventType type, InputStream *inputStream, OutputStream *outputStream, void *ctx) override;
 };

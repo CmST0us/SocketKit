@@ -47,6 +47,7 @@ public:
     InputStream* getInputStream();
     OutputStream* getOutputStream();
     ProtocolSyntax* getProtocolSyntax();
+    void setTimeout(struct timeval *readTimeout, struct timeval *writeTimeout);
     
     TCPConnection();
     TCPConnection(std::string hostname, short port);
@@ -58,6 +59,7 @@ public:
     void connect(std::string hostname, std::string portString);
     void close();
     void shutdown(int how);
+    void disable(int how);
     void start();
     void stop();
     
