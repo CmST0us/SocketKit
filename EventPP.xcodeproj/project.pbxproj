@@ -7,20 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4F0B34531F5EB558007ACCF6 /* EvBufferAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B34511F5EB558007ACCF6 /* EvBufferAdapter.cpp */; };
 		4F0B345B1F5F1DBD007ACCF6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B345A1F5F1DBD007ACCF6 /* main.cpp */; };
 		4F0B34611F5FAFDA007ACCF6 /* ProtocolSyntax.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B345F1F5FAFDA007ACCF6 /* ProtocolSyntax.cpp */; };
 		4F0B34651F5FB04B007ACCF6 /* EchoProtocolSyntaxAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B34631F5FB04B007ACCF6 /* EchoProtocolSyntaxAdapter.cpp */; };
 		4F0B34681F5FC0F9007ACCF6 /* ConsoleEchoProtocolSyntaxAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B34661F5FC0F9007ACCF6 /* ConsoleEchoProtocolSyntaxAdapter.cpp */; };
 		4F0B346C1F5FE5BF007ACCF6 /* CustomSyntaxAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F0B346A1F5FE5BF007ACCF6 /* CustomSyntaxAdapter.cpp */; };
 		4F912B4A1F63EB1100A87CD2 /* TCPConnectionFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F912B481F63EB1100A87CD2 /* TCPConnectionFactory.cpp */; };
+		4F93584C217111B600A9F613 /* SocketAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E1B1F5D8A190030CE92 /* SocketAddress.cpp */; };
+		4F93584D2171129000A9F613 /* SocketException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E401F5D90480030CE92 /* SocketException.cpp */; };
 		4FC64E151F5D89A50030CE92 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E141F5D89A50030CE92 /* main.cpp */; };
 		4FC64E1D1F5D8A190030CE92 /* SocketAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E1B1F5D8A190030CE92 /* SocketAddress.cpp */; };
 		4FC64E231F5D8A410030CE92 /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E211F5D8A410030CE92 /* TCPServer.cpp */; };
 		4FC64E261F5D8A4B0030CE92 /* UDPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E241F5D8A4B0030CE92 /* UDPServer.cpp */; };
 		4FC64E291F5D8A600030CE92 /* TCPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E271F5D8A600030CE92 /* TCPConnection.cpp */; };
 		4FC64E2C1F5D8A6E0030CE92 /* UDPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E2A1F5D8A6E0030CE92 /* UDPConnection.cpp */; };
-		4FC64E351F5D8A8B0030CE92 /* Stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E331F5D8A8B0030CE92 /* Stream.cpp */; };
 		4FC64E381F5D8AB10030CE92 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E361F5D8AB10030CE92 /* Buffer.cpp */; };
 		4FC64E3B1F5D8ABC0030CE92 /* BufferQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E391F5D8ABC0030CE92 /* BufferQueue.cpp */; };
 		4FC64E421F5D90480030CE92 /* SocketException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E401F5D90480030CE92 /* SocketException.cpp */; };
@@ -59,8 +59,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4F0B34511F5EB558007ACCF6 /* EvBufferAdapter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EvBufferAdapter.cpp; sourceTree = "<group>"; };
-		4F0B34521F5EB558007ACCF6 /* EvBufferAdapter.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = EvBufferAdapter.hpp; sourceTree = "<group>"; };
 		4F0B34581F5F1DBD007ACCF6 /* test_somethine */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test_somethine; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F0B345A1F5F1DBD007ACCF6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		4F0B345F1F5FAFDA007ACCF6 /* ProtocolSyntax.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ProtocolSyntax.cpp; sourceTree = "<group>"; };
@@ -85,8 +83,6 @@
 		4FC64E281F5D8A600030CE92 /* TCPConnection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TCPConnection.hpp; sourceTree = "<group>"; };
 		4FC64E2A1F5D8A6E0030CE92 /* UDPConnection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UDPConnection.cpp; sourceTree = "<group>"; };
 		4FC64E2B1F5D8A6E0030CE92 /* UDPConnection.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UDPConnection.hpp; sourceTree = "<group>"; };
-		4FC64E331F5D8A8B0030CE92 /* Stream.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Stream.cpp; sourceTree = "<group>"; };
-		4FC64E341F5D8A8B0030CE92 /* Stream.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Stream.hpp; sourceTree = "<group>"; };
 		4FC64E361F5D8AB10030CE92 /* Buffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		4FC64E371F5D8AB10030CE92 /* Buffer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Buffer.hpp; sourceTree = "<group>"; };
 		4FC64E391F5D8ABC0030CE92 /* BufferQueue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BufferQueue.cpp; sourceTree = "<group>"; };
@@ -196,7 +192,6 @@
 				4F0B34621F5FAFE4007ACCF6 /* ProtocolSyntax */,
 				4FC64E3C1F5D8AC90030CE92 /* TCP */,
 				4FC64E3D1F5D8ACF0030CE92 /* UDP */,
-				4FC64E3E1F5D8ADA0030CE92 /* Stream */,
 				4FC64E3F1F5D8AE30030CE92 /* Buffer */,
 			);
 			path = EventPP;
@@ -226,20 +221,9 @@
 			path = UDP;
 			sourceTree = "<group>";
 		};
-		4FC64E3E1F5D8ADA0030CE92 /* Stream */ = {
-			isa = PBXGroup;
-			children = (
-				4FC64E331F5D8A8B0030CE92 /* Stream.cpp */,
-				4FC64E341F5D8A8B0030CE92 /* Stream.hpp */,
-			);
-			path = Stream;
-			sourceTree = "<group>";
-		};
 		4FC64E3F1F5D8AE30030CE92 /* Buffer */ = {
 			isa = PBXGroup;
 			children = (
-				4F0B34511F5EB558007ACCF6 /* EvBufferAdapter.cpp */,
-				4F0B34521F5EB558007ACCF6 /* EvBufferAdapter.hpp */,
 				4FC64E361F5D8AB10030CE92 /* Buffer.cpp */,
 				4FC64E371F5D8AB10030CE92 /* Buffer.hpp */,
 				4FC64E391F5D8ABC0030CE92 /* BufferQueue.cpp */,
@@ -355,6 +339,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F0B345B1F5F1DBD007ACCF6 /* main.cpp in Sources */,
+				4F93584D2171129000A9F613 /* SocketException.cpp in Sources */,
+				4F93584C217111B600A9F613 /* SocketAddress.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,7 +352,6 @@
 				4F0B34651F5FB04B007ACCF6 /* EchoProtocolSyntaxAdapter.cpp in Sources */,
 				4F0B34681F5FC0F9007ACCF6 /* ConsoleEchoProtocolSyntaxAdapter.cpp in Sources */,
 				4FC64E151F5D89A50030CE92 /* main.cpp in Sources */,
-				4F0B34531F5EB558007ACCF6 /* EvBufferAdapter.cpp in Sources */,
 				4FC64E421F5D90480030CE92 /* SocketException.cpp in Sources */,
 				DF300B122170A927002F33C1 /* Communicator.cpp in Sources */,
 				4F0B34611F5FAFDA007ACCF6 /* ProtocolSyntax.cpp in Sources */,
@@ -377,7 +362,6 @@
 				4F0B346C1F5FE5BF007ACCF6 /* CustomSyntaxAdapter.cpp in Sources */,
 				4FC64E3B1F5D8ABC0030CE92 /* BufferQueue.cpp in Sources */,
 				4FC64E261F5D8A4B0030CE92 /* UDPServer.cpp in Sources */,
-				4FC64E351F5D8A8B0030CE92 /* Stream.cpp in Sources */,
 				4FC64E291F5D8A600030CE92 /* TCPConnection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

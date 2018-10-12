@@ -10,65 +10,39 @@
 #define TCPServer_hpp
 
 #include <functional>
-#include <map> //or lamber method ?[TODO]
+#include <map>
 #include <vector>
 #include <memory>
 #include <mutex>
 
-#include <event2/event.h>
-#include <event2/listener.h>
+#include "../Communicator.hpp"
 
 #include "SocketAddress.hpp"
 #include "TCPConnection.hpp"
 #include "ProtocolSyntax.hpp"
 
+typedef int SocketFd;
+
 namespace ts{
-#warning [TODO] 端口冲突
-class TCPServer{
-private:
-    SocketAddress mSocketAddress;
-    std::shared_ptr<ProtocolSyntax> mSyntax;
-    std::map<std::string, TCPConnection *> mClients;
-    
-    struct event_base* mEventBase = NULL;
-    struct evconnlistener* mListener = NULL;
-    
-    std::mutex clientMapLock;
-    
-    void _init();
-public:
-    
-    
-    void setProtocolSyntax(std::shared_ptr<ProtocolSyntax> syntax);
-    
-    TCPConnection * getConnectionWithKey(std::string s);
-    void setConnectionWithKey(std::string s, TCPConnection *connection);
-    void removeConnectionWithKey(std::string s);
-    
-    ProtocolSyntax* getProtocolSyntax();
-    SocketAddress getSocketAddress();
-    
-    void onAcceptEvent(struct evconnlistener *listener,
-                               evutil_socket_t fd,
-                               struct sockaddr *address,
-                               int socklen,
-                               void *ctx);
-    void onAcceptErrorEvent(struct evconnlistener *listener, void *ctx);
-    
-    TCPServer();
-    TCPServer(SocketAddress& address);
-    TCPServer(short port);
-    TCPServer(short port, int backlog);
-    TCPServer(SocketAddress& address, int backlog);
-    ~TCPServer();
-    
-    bool setup();
-    
-    void start();
-    void stop();
-    
-    
-};
+    class TCPServer : public CommunicatorService {
+    private:
+        SocketFd mSocket;
+        
+    public:
+        TCPServer();
+        TCPServer(SocketAddress address);
+        TCPServer(short port);
+        
+        virtual ~TCPServer();
+        
+        SocketAddress mSocketAddress;
+        
+        virtual bool writeData(const uchar *data, int len);
+        virtual bool start();
+        virtual bool pause();
+        virtual bool resume();
+        virtual bool close();
+    };
     
 }
 #endif /* TCPServer_hpp */

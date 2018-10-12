@@ -10,33 +10,7 @@
 #include <sstream>
 using namespace ts;
 
-//Just Support IPv4
-void SocketAddress::setIp(std::string ip) {
-    this->mIp = ip;
-}
-void SocketAddress::setPort(int port) {
-    this->mPort = port;
-}
-void SocketAddress::setPort(std::string portString) {
-    int port = atoi(portString.c_str());
-    this->setPort(port);
-}
-void SocketAddress::setErrorMessage(std::string errorMsg) {
-    this->mErrorMessage = errorMsg;
-}
-std::string SocketAddress::getHostname() {
-    return this->mHostname;
-}
-
-int SocketAddress::getPort() {
-    return this->mPort;
-}
-
-std::string SocketAddress::getIpString() {
-    return mIp;
-}
-
-struct sockaddr_in SocketAddress::getSockaddrIn() {
+struct sockaddr_in SocketAddress::getSockaddrIn() const {
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
@@ -45,54 +19,59 @@ struct sockaddr_in SocketAddress::getSockaddrIn() {
     return addr;
 }
 
-std::string SocketAddress::getErrorMessage() {
-    return this->mErrorMessage;
-}
-
-
-bool SocketAddress::setupResolveHost(std::string hostname) {
-    
-    return true;
-}
 void SocketAddress::startResolveHost() {
-    
+    try {
+        std::string ip = SocketAddress::getHostByName(this->mHostname);
+        this->mIp = ip;
+    } catch (SocketException e) {
+        throw e;
+    }
 }
 
-void SocketAddress::waitForResolveFinish() {
-    
-}
-
-std::string SocketAddress::ipPortPairString() {
+std::string SocketAddress::getIpPortPairString() const {
     std::stringstream ss;
     ss<<this->mIp<<":"<<this->mPort;
     return ss.str();
 }
 
-SocketAddress::SocketAddress(std::string hostname, int port){
+std::string SocketAddress::getIpString() const {
+    return this->mIp;
+}
+
+SocketAddress::SocketAddress(std::string hostname, int port) {
     this->mPort = port;
     this->mHostname = hostname;
+    this->mIp = "";
     
     try {
-        setupResolveHost(hostname);
+        startResolveHost();
     } catch (SocketException e) {
         throw e;
     }
-    
-    startResolveHost();
 }
 
 SocketAddress::SocketAddress(std::string hostname, std::string portString) {
     int port = atoi(portString.c_str());
+    this->mIp = "";
     this->mPort = port;
     this->mHostname = hostname;
     
     try {
-        setupResolveHost(hostname);
+        startResolveHost();
     } catch (SocketException e) {
         throw e;
     }
-    
-    startResolveHost();
+}
+
+SocketAddress::SocketAddress(std::string hostname) {
+    this->mIp = "";
+    this->mPort = 0;
+    this->mHostname = hostname;
+    try {
+        startResolveHost();
+    } catch (SocketException e) {
+        throw e;
+    }
 }
 
 SocketAddress::SocketAddress() {

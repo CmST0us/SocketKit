@@ -16,7 +16,6 @@
 #include <evutil.h>
 
 #include "SocketAddress.hpp"
-#include "Stream.hpp"
 #include "ProtocolSyntax.hpp"
 
 namespace ts {

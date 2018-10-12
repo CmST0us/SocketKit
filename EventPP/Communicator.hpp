@@ -10,11 +10,18 @@
 #define Communicator_hpp
 
 #include <stdio.h>
+#include <memory>
 
 typedef unsigned char uchar;
 
 namespace ts {
     class CommunicatorService;
+    
+    enum CommunicatorServiceEvent {
+        CommunicatorServiceEventSuccess = 0,
+        CommunicatorServiceEventBroken = 1,
+        CommunicatorServiceEventError = 2
+    };
     
     class CommunicatorDelegate {
     public:
@@ -22,10 +29,10 @@ namespace ts {
         
         virtual void serviceDidUpdateStatus(CommunicatorService &service);
         
-        virtual void serviceDidReceiveEvent(CommunicatorService &service) {
+        virtual void serviceDidReceiveEvent(CommunicatorServiceEvent event) {
             
         };
-    }
+    };
     
     class Communicator {
     public:
@@ -44,7 +51,7 @@ namespace ts {
         virtual bool resume();
         virtual bool close();
         
-        CommunicatorDelegate mDelegate;
+        std::weak_ptr<CommunicatorDelegate> mDelegate;
     };
     
 };
