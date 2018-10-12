@@ -9,7 +9,7 @@
 #ifndef CustomSyntaxAdapter_hpp
 #define CustomSyntaxAdapter_hpp
 
-#include "ProtocolSyntax.hpp"
+#include "../ProtocolSyntax.hpp"
 #include <functional>
 #include "TCPConnection.hpp"
 namespace ts {

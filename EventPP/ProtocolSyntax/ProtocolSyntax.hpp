@@ -11,9 +11,11 @@
 
 
 namespace ts {
+    
 class Buffer;
 class InputStream;
 class OutputStream;
+    
 class ProtocolSyntax {
 public:
     enum EventType{
@@ -33,6 +35,7 @@ public:
     
     virtual ~ProtocolSyntax() {};
 };
+    
 }
 
 #endif /* ProtocolSyntax_hpp */

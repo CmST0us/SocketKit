@@ -14,16 +14,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <event2/event.h>
-#include <event2/dns.h>
-#include <event2/util.h>
-
 #include "SocketException.hpp"
 namespace ts {
+    
 class SocketAddress {
 private:
-    struct event_base* mEventBase = NULL;
-    struct evdns_base* mEventDnsBase = NULL;
     
     int mPort;
     std::string mIp;
@@ -58,5 +53,6 @@ public:
     
     ~SocketAddress();
 };
+    
 }
 #endif /* SocketAddress_hpp */
