@@ -37,6 +37,7 @@ namespace ts {
         std::string getIpPortPairString() const;
         std::string getIpString() const;
         
+        void useSockAddrIn(struct sockaddr_in addr_in);
         void startResolveHost();
         
     // class func

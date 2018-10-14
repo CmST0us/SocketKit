@@ -14,29 +14,36 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <thread>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #include "../Communicator.hpp"
 
 #include "SocketAddress.hpp"
-#include "TCPConnection.hpp"
-#include "ProtocolSyntax.hpp"
-
-typedef int SocketFd;
 
 namespace ts{
     class TCPServer : public CommunicatorService {
     private:
         SocketFd mSocket;
+        std::thread mAccpetThread;
         
+        bool createSocket();
+        bool bindSocket();
+        bool listenSocket();
+        bool closeSocket();
+        void accpetHandle();
+        void accpetHandle2();
     public:
         TCPServer();
         TCPServer(SocketAddress address);
         TCPServer(short port);
         
-        virtual ~TCPServer();
+        ~TCPServer();
         
         SocketAddress mSocketAddress;
-        
         virtual bool writeData(const uchar *data, int len);
         virtual bool start();
         virtual bool pause();

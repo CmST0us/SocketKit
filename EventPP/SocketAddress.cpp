@@ -21,6 +21,7 @@ struct sockaddr_in SocketAddress::getSockaddrIn() const {
 
 void SocketAddress::startResolveHost() {
     try {
+        //[TODO] Random Port
         std::string ip = SocketAddress::getHostByName(this->mHostname);
         this->mIp = ip;
     } catch (SocketException e) {
@@ -36,6 +37,16 @@ std::string SocketAddress::getIpPortPairString() const {
 
 std::string SocketAddress::getIpString() const {
     return this->mIp;
+}
+
+void SocketAddress::useSockAddrIn(struct sockaddr_in addr_in) {
+    if (addr_in.sin_family == AF_INET) {
+        int port = ntohs(addr_in.sin_port);
+        this->mPort = port;
+        char *ipAddrStr = inet_ntoa(addr_in.sin_addr);
+        this->mIp = std::string(ipAddrStr, strlen(ipAddrStr));
+        this->mHostname = mIp;
+    }
 }
 
 SocketAddress::SocketAddress(std::string hostname, int port) {
@@ -78,7 +89,7 @@ SocketAddress::SocketAddress() {
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     this->mIp = "";
-    this->mPort = 0;
+    this->mPort = -1;
     this->mHostname = "";
 }
 SocketAddress::~SocketAddress() {

@@ -13,8 +13,10 @@
 #include <memory>
 
 typedef unsigned char uchar;
+typedef int SocketFd;
 
 namespace ts {
+    class Communicator;
     class CommunicatorService;
     
     enum CommunicatorServiceEvent {
@@ -23,35 +25,47 @@ namespace ts {
         CommunicatorServiceEventError = 2
     };
     
-    class CommunicatorDelegate {
+    class CommunicatorServiceDelegate {
     public:
-        virtual void serviceDidReadData(uchar *data, int len, CommunicatorService &service);
-        
-        virtual void serviceDidUpdateStatus(CommunicatorService &service);
-        
-        virtual void serviceDidReceiveEvent(CommunicatorServiceEvent event) {
+        virtual void serviceDidReadData(uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
+            
+        }
+        virtual void serviceDidUpdateStatus(ts::CommunicatorService &service) {
+            
+        }
+        virtual void serviceDidReceiveEvent(ts::CommunicatorServiceEvent event) {
             
         };
     };
     
     class Communicator {
     public:
-        virtual bool writeData(const uchar *data, int len);
-        virtual bool start();
-        virtual bool pause();
-        virtual bool resume();
-        virtual bool close();
+        virtual bool writeData(const uchar *data, int len) = 0;
+        virtual bool start() = 0;
+        virtual bool pause() = 0;
+        virtual bool resume() = 0;
+        virtual bool close() = 0;
     };
     
     class CommunicatorService : public Communicator {
     public:
-        virtual bool writeData(const uchar *data, int len);
-        virtual bool start();
-        virtual bool pause();
-        virtual bool resume();
-        virtual bool close();
+        virtual bool writeData(const uchar *data, int len) {
+            return false;
+        }
+        virtual bool start() {
+            return false;
+        }
+        virtual bool pause() {
+            return false;
+        }
+        virtual bool resume() {
+            return false;
+        }
+        virtual bool close() {
+            return false;
+        }
         
-        std::weak_ptr<CommunicatorDelegate> mDelegate;
+        std::weak_ptr<ts::CommunicatorServiceDelegate> mDelegate;
     };
     
 };

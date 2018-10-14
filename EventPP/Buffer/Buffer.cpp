@@ -7,3 +7,31 @@
 //
 
 #include "Buffer.hpp"
+
+Buffer::Buffer() {
+    
+}
+
+Buffer::~Buffer() {
+    
+}
+
+ssize_t Buffer::read(void *dst, int len) {
+    return  -1;
+};
+
+ssize_t Buffer::write(const void *src, int len) {
+    return -1;
+};
+
+ssize_t Buffer::fetch(void *dst, int len) {
+    return -1;
+};
+
+ssize_t Buffer::length() {
+    return -1;
+}
+
+void Buffer::flush() {
+    
+}

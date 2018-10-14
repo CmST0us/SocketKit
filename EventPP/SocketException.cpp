@@ -20,6 +20,8 @@ SocketException SocketException::socksFdInitError(-10003, "Cannot init socket fd
 
 SocketException SocketException::socksBindError(-10004, "Cannot bind socket");
 
+SocketException SocketException::socksListenError(-10005, "Cannot listen socket");
+
 SocketException SocketException::eventInitError(-11001, "Cannot init an event");
 
 SocketException SocketException::eventAddError(-11002, "Cannot add an event");

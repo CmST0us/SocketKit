@@ -15,6 +15,8 @@
 		4F912B4A1F63EB1100A87CD2 /* TCPConnectionFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F912B481F63EB1100A87CD2 /* TCPConnectionFactory.cpp */; };
 		4F93584C217111B600A9F613 /* SocketAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E1B1F5D8A190030CE92 /* SocketAddress.cpp */; };
 		4F93584D2171129000A9F613 /* SocketException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E401F5D90480030CE92 /* SocketException.cpp */; };
+		4F9358532173903E00A9F613 /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E211F5D8A410030CE92 /* TCPServer.cpp */; };
+		4F93585421739BED00A9F613 /* TCPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E271F5D8A600030CE92 /* TCPConnection.cpp */; };
 		4FC64E151F5D89A50030CE92 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E141F5D89A50030CE92 /* main.cpp */; };
 		4FC64E1D1F5D8A190030CE92 /* SocketAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E1B1F5D8A190030CE92 /* SocketAddress.cpp */; };
 		4FC64E231F5D8A410030CE92 /* TCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC64E211F5D8A410030CE92 /* TCPServer.cpp */; };
@@ -338,6 +340,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F9358532173903E00A9F613 /* TCPServer.cpp in Sources */,
+				4F93585421739BED00A9F613 /* TCPConnection.cpp in Sources */,
 				4F0B345B1F5F1DBD007ACCF6 /* main.cpp in Sources */,
 				4F93584D2171129000A9F613 /* SocketException.cpp in Sources */,
 				4F93584C217111B600A9F613 /* SocketAddress.cpp in Sources */,
