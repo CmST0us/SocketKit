@@ -10,6 +10,8 @@
 #include <sys/select.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
+#include <sys/fcntl.h>
 
 #include "TCPServer.hpp"
 #include "TCPConnection.hpp"
@@ -43,9 +45,25 @@ TCPServer::~TCPServer() {
 bool TCPServer::createSocket() {
     SocketFd socket = ::socket(PF_INET, SOCK_STREAM, 0);
     if (socket != -1) {
+        if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
+            return false;
+        }
+        
         int option = true;
         socklen_t optionLen = sizeof(option);
+        
+        struct linger l;
+        l.l_linger = 0;
+        l.l_onoff = 1;
+        int intval = 1;
+        
         setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optionLen);
+        setsockopt(socket, SOL_SOCKET, SO_LINGER, &l, sizeof(struct linger));
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &intval, sizeof(int));
+        setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, &intval, sizeof(int));
+        setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &intval, sizeof(int));
+        
+        
         this->mSocket = socket;
         return true;
     }
@@ -108,7 +126,7 @@ bool TCPServer::close() {
     return true;
 }
 
-void TCPServer::accpetHandle2() {
+void TCPServer::accpetHandle() {
     std::cout<<"Accept"<<std::endl;
     
     fd_set reads;
@@ -149,7 +167,7 @@ void TCPServer::accpetHandle2() {
     }
 }
 
-void TCPServer::accpetHandle() {
+void TCPServer::accpetHandle2() {
     while (1) {
         // accept
         struct sockaddr_in acceptSocketAddrIn;
