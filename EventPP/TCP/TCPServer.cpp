@@ -127,62 +127,39 @@ bool TCPServer::close() {
 }
 
 void TCPServer::accpetHandle() {
-    std::cout<<"Accept"<<std::endl;
-    
     fd_set reads;
     int result;
     struct timeval timeout;
     
-    FD_ZERO(&reads);
-    FD_SET(this->mSocket, &reads);
-    int fd_max = this->mSocket + 1;
-    while (1) {
+    do {
+        FD_ZERO(&reads);
+        FD_SET(this->mSocket, &reads);
+        int fd_max = this->mSocket + 1;
+        
         timeout.tv_sec = 5;
         timeout.tv_usec = 5000;
         result = ::select(fd_max, &reads, 0, 0, &timeout);
         if (result == -1) {
             //server error
             std::cout<<"Server Error"<<std::endl;
-            break;
+            this->willStop = true;
         } else if (result == 0) {
             // timeout
-            std::cout<<"timeout retry"<<std::endl;
         } else {
-            for (int i = 0; i < fd_max; ++i) {
-                if (i == this->mSocket) {
-                    // accept
-                    struct sockaddr_in acceptSocketAddrIn = {0};
-                    socklen_t addrInLen;
-                    int acceptSocket = ::accept(this->mSocket, (struct sockaddr *)&acceptSocketAddrIn, &addrInLen);
-                    auto client = std::make_shared<TCPConnection>();
-                    client->useSocketFd(acceptSocket);
-                    client->mSocketAddress.useSockAddrIn(acceptSocketAddrIn);
-                    const char *ipString = client->mSocketAddress.getIpString().c_str();
-                    if (!this->mDelegate.expired()) {
-                        this->mDelegate.lock()->serviceDidReadData((uchar *)ipString, (int)strlen(ipString), client);
-                    }
+            if (FD_ISSET(this->mSocket, &reads)) {
+                // accept
+                struct sockaddr_in acceptSocketAddrIn;
+                socklen_t addrInLen = sizeof(acceptSocketAddrIn);
+                int acceptSocket = ::accept(this->mSocket, (struct sockaddr *)&acceptSocketAddrIn, &addrInLen);
+                auto client = std::make_shared<TCPConnection>();
+                client->useSocketFd(acceptSocket);
+                client->mSocketAddress.useSockAddrIn(acceptSocketAddrIn);
+                const char *ipString = client->mSocketAddress.getIpPortPairString().c_str();
+                if (!this->mDelegate.expired()) {
+                    this->mDelegate.lock()->serviceDidReadData((uchar *)ipString, (int)strlen(ipString), client);
                 }
             }
         }
-    }
-}
-
-void TCPServer::accpetHandle2() {
-    while (1) {
-        // accept
-        struct sockaddr_in acceptSocketAddrIn;
-        socklen_t addrInLen = sizeof(acceptSocketAddrIn);
-        int acceptSocket = ::accept(this->mSocket, (struct sockaddr *)&acceptSocketAddrIn, &addrInLen);
-        if (acceptSocket == -1) {
-            break;
-        }
-        auto client = std::make_shared<TCPConnection>();
-        client->useSocketFd(acceptSocket);
-        client->mSocketAddress.useSockAddrIn(acceptSocketAddrIn);
-        const char *ipString = client->mSocketAddress.getIpPortPairString().c_str();
-        if (!this->mDelegate.expired()) {
-            this->mDelegate.lock()->serviceDidReadData((uchar *)ipString, (int)strlen(ipString), client);
-        }
-    }
+    } while (!this->willStop);
 }
 

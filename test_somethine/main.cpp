@@ -13,6 +13,8 @@
 class Delegate: public ts::CommunicatorServiceDelegate {
     virtual void serviceDidReadData(uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
         ::printf("[IN]Connect: %s\n", (const char *)data);
+        service->writeData((const unsigned char *)"Hello\n", 6);
+        service->close();
     };
 };
 

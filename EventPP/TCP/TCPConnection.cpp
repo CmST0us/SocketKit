@@ -7,6 +7,8 @@
 //
 
 #include <iostream>
+#include <unistd.h>
+#include <stdio.h>
 
 #include "TCPConnection.hpp"
 #include "SocketException.hpp"
@@ -44,7 +46,9 @@ void TCPConnection::useSocketFd(SocketFd fd) {
 }
 
 bool TCPConnection::writeData(const uchar *data, int len) {
-    return true;
+    int s = send(this->mSocket, data, len, 0);
+    if (s > 0) return true;
+    return false;
 }
 
 bool TCPConnection::start() {
@@ -60,5 +64,7 @@ bool TCPConnection::resume() {
 }
 
 bool TCPConnection::close() {
+    shutdown(this->mSocket, SHUT_RDWR);
+    ::close(this->mSocket);
     return true;
 }

@@ -25,6 +25,17 @@ namespace ts {
         CommunicatorServiceEventError = 2
     };
     
+    struct CommunicatorServiceStatus {
+        bool isInit:1;  // 是否初始化成功，只有初始化成功时才可以进行连接。
+        bool isConnected:1;   // 当连接上的时候会置为YES，连接断开即为NO。
+        bool isConnecting:1;    // 开始连接时会设置为YES，连接成功或失败则置为NO。
+        bool isClosing:1;   // 开始关闭时会设置为YES，断开连接之后或其他时则为NO。
+        bool isPause:1; // 当保持连接并中止时，即为YES，使用中为NO。当连接中断时不予判断。
+        bool canRead:1; // 可以读取数据。
+        bool canWrite:1;    // 可以写入。
+        uint8_t unDefined:1;
+    };
+    
     class CommunicatorServiceDelegate {
     public:
         virtual void serviceDidReadData(uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
@@ -64,7 +75,7 @@ namespace ts {
         virtual bool close() {
             return false;
         }
-        
+        CommunicatorServiceStatus mStatus = {0};
         std::weak_ptr<ts::CommunicatorServiceDelegate> mDelegate;
     };
     

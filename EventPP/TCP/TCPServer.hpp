@@ -29,13 +29,14 @@ namespace ts{
     private:
         SocketFd mSocket;
         std::thread mAccpetThread;
+        bool willStop = false;
         
         bool createSocket();
         bool bindSocket();
         bool listenSocket();
         bool closeSocket();
         void accpetHandle();
-        void accpetHandle2();
+        
     public:
         TCPServer();
         TCPServer(SocketAddress address);
