@@ -11,55 +11,31 @@
 
 #include <memory>
 
-#include <event2/event.h>
-#include <event2/bufferevent.h>
-
 #include "SocketAddress.hpp"
-#include "Stream.hpp"
-#include "ProtocolSyntax.hpp"
+#include "../Communicator.hpp"
 
 namespace ts {
-    class UDPServer;
-    class UDPConnection{
-        friend class UDPServer;
+    class UDPConnection : public CommunicatorService {
     private:
-        void *mContext;
         
-        SocketAddress mSocketAddress;
-        struct event_base* mEventBase = nullptr;
-        
-        std::shared_ptr<ProtocolSyntax> mSyntax;
-        
-        void _init();
+        SocketFd mSocket;
         
     public:
-        void setProtocolSyntax(std::shared_ptr<ProtocolSyntax> syntax);
-        void *getContext() const;
-        void setContext(void * ctx);
-        
-        SocketAddress getSocketAddress();
-        ProtocolSyntax* getProtocolSyntax();
-        
         UDPConnection();
-        UDPConnection(std::string hostname, short port);
+        UDPConnection(SocketAddress address);
+        UDPConnection(std::string hostname, int port);
         UDPConnection(std::string hostname, std::string portString);
         ~UDPConnection();
         
-        void connect();
-        void connect(std::string hostname, short port);
-        void connect(std::string hostname, std::string portString);
-        void close();
-        void start();
-        void stop();
+        SocketAddress mSocketAddress;
         
-        void onSignalEvent(int fd, short what, void *arg);
-        void onConnectedEvent();
-        void onReadableEvent(struct bufferevent *bev, void *ptr);
-        void onWriteableEvent(struct bufferevent *bev, void *ptr);
-        void onErrorEvent();
-        void onWriteError();
-        void onReadError();
-        void onEOFEvent();
+        void useSocketFd(SocketFd fd);
+        
+        virtual bool writeData(const uchar *data, int len);
+        virtual bool start();
+        virtual bool pause();
+        virtual bool resume();
+        virtual bool close();
     };
 }
 

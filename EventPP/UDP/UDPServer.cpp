@@ -169,5 +169,10 @@ void UDPServer::recvHandle() {
 }
 
 bool UDPServer::writeData(const uchar *data, int len) {
+    sockaddr_in sockaddrIn = this->mClientAddress.getSockaddrIn();
+    ssize_t sendLen = ::sendto(this->mSocket, data, len, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+    if (sendLen < 0) {
+        return false;
+    }
     return true;
 }

@@ -88,7 +88,6 @@ bool TCPServer::listenSocket() {
 }
 
 bool TCPServer::writeData(const uchar *data, int len) {
-    
     return true;
 }
 

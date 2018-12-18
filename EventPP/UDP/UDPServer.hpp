@@ -44,6 +44,7 @@ namespace ts {
         ~UDPServer();
     
         SocketAddress mSocketAddress;
+        SocketAddress mClientAddress;
         virtual bool writeData(const uchar *data, int len);
         virtual bool start();
         virtual bool pause();

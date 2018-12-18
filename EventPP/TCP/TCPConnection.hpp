@@ -12,7 +12,6 @@
 #include <memory>
 
 #include "SocketAddress.hpp"
-#include "ProtocolSyntax.hpp"
 #include "../Communicator.hpp"
 
 namespace ts {

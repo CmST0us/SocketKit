@@ -10,6 +10,8 @@
 #include "../EventPP/SocketAddress.hpp"
 #include "../EventPP/TCP/TCPServer.hpp"
 #include "../EventPP/UDP/UDPServer.hpp"
+#include "../EventPP/UDP/UDPConnection.hpp"
+#include "../EventPP/SocketAddress.hpp"
 
 class Delegate: public ts::CommunicatorServiceDelegate {
     virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
@@ -28,7 +30,14 @@ int main(int argc, char **argv)
     
     ts::UDPServer server(14560);
     server.mDelegate = wp;
+    server.mClientAddress = ts::SocketAddress("127.0.0.1", 12001);
     server.start();
     
+//    ts::UDPConnection connect("127.0.0.1", 12001);
+//    connect.start();
+    uchar d[] = "1232";
+//    connect.writeData(d, 4);
+
+    server.writeData(d, 4);
     return 0;
 }
