@@ -19,38 +19,37 @@
 #include <evutil.h>
 #include <map>
 
-#include "ProtocolSyntax.hpp"
+#include "../Communicator.hpp"
 #include "SocketAddress.hpp"
-#include "SocketException.hpp"
-#include "UDPConnection.hpp"
+
+
+#define UDP_BUFFER_SIZE 1500
 
 namespace ts {
-class UDPServer {
-private:
-    std::shared_ptr<ProtocolSyntax> mSyntax;
-//    std::map<std::string, UDPConnection *> mClients;
-    struct event_base* mEventBase = nullptr;
-    SocketAddress mSocketAddress;
-    evutil_socket_t mSocketFd;
+    class UDPServer : public CommunicatorService {
+    private:
+        SocketFd mSocket;
+        std::thread mRecvThread;
+        bool willStop = false;
+        
+        bool createSocket();
+        bool bindSocket();
+        bool closeSocket();
+        void recvHandle();
+        
+    public:
+        UDPServer();
+        UDPServer(SocketAddress address);
+        UDPServer(short port);
+        ~UDPServer();
     
-    
-    void _init();
-public:
-    UDPServer(SocketAddress& address);
-    UDPServer(short port);
-    ~UDPServer();
-    
-    void setProtocolSyntax(std::shared_ptr<ProtocolSyntax> syntax);
-    
-    ProtocolSyntax * getProtocolSyntax();
-    
-    void setup();
-    void start();
-    void stop();
-    
-    void onReadable(ev_socklen_t sockfd);
-};
-    
+        SocketAddress mSocketAddress;
+        virtual bool writeData(const uchar *data, int len);
+        virtual bool start();
+        virtual bool pause();
+        virtual bool resume();
+        virtual bool close();
+    };
 }
 #endif
 

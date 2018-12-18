@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <memory>
+#include "SocketAddress.hpp"
 
 typedef unsigned char uchar;
 typedef int SocketFd;
@@ -38,7 +39,7 @@ namespace ts {
     
     class CommunicatorServiceDelegate {
     public:
-        virtual void serviceDidReadData(uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
+        virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
             
         }
         virtual void serviceDidUpdateStatus(ts::CommunicatorService &service) {

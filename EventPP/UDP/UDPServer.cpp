@@ -6,93 +6,168 @@
 //  Copyright © 2017年 CmST0us. All rights reserved.
 //
 
-#include "UDPServer.hpp"
-#include <evutil.h>
-#include <event.h>
 #include <iostream>
+#include <sys/fcntl.h>
+#include "UDPServer.hpp"
 
 using namespace ts;
 
-static void eventCallback(evutil_socket_t socket, short event, void *ctx) {
-    auto serverCtx = (UDPServer *)ctx;
-    switch (event) {
-        case EV_READ: {
-            serverCtx->onReadable(socket);
-        }
-            break;
-        default:
-            break;
-    }
+UDPServer::UDPServer() {
+    this->mSocket = -1;
+    this->mSocketAddress.mHostname = "0.0.0.0";
+    this->mSocketAddress.mPort = 0;
+    this->mSocketAddress.startResolveHost();
 }
 
-UDPServer::UDPServer(SocketAddress& address) {
-    this->_init();
+UDPServer::UDPServer(SocketAddress address) {
+    this->mSocket = -1;
     this->mSocketAddress = address;
+    this->mSocketAddress.startResolveHost();
 }
+
 UDPServer::UDPServer(short port) {
-    this->_init();
-    this->mSocketAddress.setPort(port);
-    this->mSocketAddress.setIp("0.0.0.0");
+    this->mSocket = -1;
+    this->mSocketAddress.mPort = port;
+    this->mSocketAddress.mHostname = "0.0.0.0";
+    this->mSocketAddress.startResolveHost();
 }
 
 UDPServer::~UDPServer() {
-    if (this->mEventBase != nullptr) {
-        event_base_free(this->mEventBase);
-        this->mEventBase = nullptr;
+    this->mRecvThread.join();
+}
+
+bool UDPServer::createSocket() {
+    SocketFd socket = ::socket(PF_INET, SOCK_DGRAM, 0);
+    if (socket != -1) {
+        if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
+            return false;
+        }
+        
+        int option = true;
+        socklen_t optionLen = sizeof(option);
+        
+        struct linger l;
+        l.l_linger = 0;
+        l.l_onoff = 1;
+        int intval = 1;
+        
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optionLen);
+        setsockopt(socket, SOL_SOCKET, SO_LINGER, &l, sizeof(struct linger));
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &intval, sizeof(int));
+        setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &intval, sizeof(int));
+        
+        
+        this->mSocket = socket;
+        this->mStatus.isInit = true;
+        return true;
     }
-    close(this->mSocketFd);
+    return false;
 }
 
-void UDPServer::setProtocolSyntax(std::shared_ptr<ProtocolSyntax> syntax) {
-    this->mSyntax = syntax;
+bool UDPServer::bindSocket() {
+    if (this->mStatus.isInit == false) {
+        return false;
+    }
+    
+    struct sockaddr_in sockAddrIn = this->mSocketAddress.getSockaddrIn();
+    int ret = ::bind(this->mSocket, (struct sockaddr *)&sockAddrIn, sizeof(sockAddrIn));
+    if (ret == 0) {
+        return true;
+    }
+    return false;
 }
 
-ProtocolSyntax * UDPServer::getProtocolSyntax() {
-    return this->mSyntax.get();
+
+bool UDPServer::closeSocket() {
+    this->mStatus.isClosing = true;
+    int ret = ::close(this->mSocket);
+    if (ret == 0) {
+        return true;
+    }
+    return false;
 }
 
-void UDPServer::_init() {
-    this->mEventBase = event_base_new();
-}
-
-
-void UDPServer::setup() {
-    auto fd = ::socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) {
-        //init socket fd error
+bool UDPServer::start() {
+    int ret = this->createSocket();
+    if (!ret) {
         throw SocketException::socksFdInitError;
     }
-    this->mSocketFd = fd;
-    
-    auto sockaddrIn = this->mSocketAddress.getSockaddrIn();
-    auto ret = ::bind(this->mSocketFd, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
-    if (ret < 0) {
+    ret = this->bindSocket();
+    if (!ret) {
         throw SocketException::socksBindError;
     }
+
+    this->mRecvThread = std::thread([this]() {
+        this->recvHandle();
+    });
     
-    auto ev = event_new(this->mEventBase, this->mSocketFd, EV_READ | EV_PERSIST, eventCallback, (void *)this);
-    if (ev == nullptr) {
-        throw SocketException::eventInitError;
+    return true;
+}
+
+bool UDPServer::pause() {
+    this->mStatus.isPause = true;
+    return true;
+}
+
+bool UDPServer::resume() {
+    this->mStatus.isPause = false;
+    return true;
+}
+
+bool UDPServer::close() {
+    this->mStatus.isClosing = true;
+    int ret = ::close(this->mSocket);
+    if (ret == 0) {
+        this->mRecvThread.join();
+        return true;
     }
-    if (event_add(ev, NULL) < 0){
-        throw SocketException::eventAddError;
-    }
+    this->mStatus.isClosing = false;
+    return false;
 }
 
-void UDPServer::start() {
-    event_base_dispatch(this->mEventBase);
+void UDPServer::recvHandle() {
+    fd_set reads;
+    int result;
+    struct timeval timeout;
+    uchar recvBuffer[UDP_BUFFER_SIZE];
+    
+    do {
+        memset(recvBuffer, 0, UDP_BUFFER_SIZE);
+        
+        FD_ZERO(&reads);
+        FD_SET(this->mSocket, &reads);
+        int fd_max = this->mSocket + 1;
+        
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 5000;
+        result = ::select(fd_max, &reads, 0, 0, &timeout);
+        if (result == -1) {
+            //server error
+            std::cout<<"Server Error"<<std::endl;
+            this->willStop = true;
+        } else if (result == 0) {
+            // timeout
+        } else {
+            if (FD_ISSET(this->mSocket, &reads)) {
+                // accept
+                struct sockaddr_in recvSocketAddrIn;
+                socklen_t addrInLen = sizeof(recvSocketAddrIn);
+                
+                ssize_t recvLen = ::recvfrom(this->mSocket, recvBuffer, UDP_BUFFER_SIZE, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
+                if (recvLen == -1) {
+                    continue;
+                }
+                SocketAddress recvAddress = SocketAddress();
+                recvAddress.useSockAddrIn(recvSocketAddrIn);
+                
+                if (!this->mDelegate.expired()) {
+                    this->mDelegate.lock()->serviceDidReadData(recvAddress, recvBuffer, (int)recvLen, nullptr);
+                }
+            }
+        }
+    } while (!this->willStop);
 }
 
-void UDPServer::stop() {
-    event_base_loopbreak(this->mEventBase);
+bool UDPServer::writeData(const uchar *data, int len) {
+    return true;
 }
-
-void UDPServer::onReadable(socklen_t sockfd) {
-    struct sockaddr_in addr;
-    socklen_t socklen = sizeof(addr);
-    unsigned char buf[1500] = {0};
-    auto recvLen = recvfrom(sockfd, buf, 1500, 0, (struct sockaddr *)&addr, &socklen);
-    std::cout<<"recv from"<<inet_ntoa(addr.sin_addr)<<":"<<ntohs(addr.sin_port) <<": len"<<recvLen<<std::endl;
-    sendto(sockfd, buf, recvLen, 0, (const struct sockaddr *)&addr, socklen);
-}
-

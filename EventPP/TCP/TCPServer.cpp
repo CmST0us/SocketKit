@@ -156,7 +156,7 @@ void TCPServer::accpetHandle() {
                 client->mSocketAddress.useSockAddrIn(acceptSocketAddrIn);
                 const char *ipString = client->mSocketAddress.getIpPortPairString().c_str();
                 if (!this->mDelegate.expired()) {
-                    this->mDelegate.lock()->serviceDidReadData((uchar *)ipString, (int)strlen(ipString), client);
+                    this->mDelegate.lock()->serviceDidReadData(client->mSocketAddress, (uchar *)ipString, (int)strlen(ipString), client);
                 }
             }
         }

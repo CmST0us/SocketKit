@@ -9,12 +9,11 @@
 
 #include "../EventPP/SocketAddress.hpp"
 #include "../EventPP/TCP/TCPServer.hpp"
+#include "../EventPP/UDP/UDPServer.hpp"
 
 class Delegate: public ts::CommunicatorServiceDelegate {
-    virtual void serviceDidReadData(uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
+    virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
         ::printf("[IN]Connect: %s\n", (const char *)data);
-        service->writeData((const unsigned char *)"Hello\n", 6);
-        service->close();
     };
 };
 
@@ -23,9 +22,13 @@ int main(int argc, char **argv)
     auto delegate = std::make_shared<Delegate>();
     std::weak_ptr<Delegate> wp(delegate);
     
-    ts::TCPServer server(12000);
+//    ts::TCPServer server(12000);
+//    server.mDelegate = wp;
+//    server.start();
+    
+    ts::UDPServer server(14560);
     server.mDelegate = wp;
     server.start();
-    return 0;
     
+    return 0;
 }
