@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "SocketAddress.hpp"
-#include "../Communicator.hpp"
+#include "Communicator.hpp"
 
 namespace ts {
     class TCPConnection : public CommunicatorService {

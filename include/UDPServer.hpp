@@ -16,10 +16,9 @@
 #include <unistd.h>
 
 #include <memory>
-#include <evutil.h>
 #include <map>
 
-#include "../Communicator.hpp"
+#include "Communicator.hpp"
 #include "SocketAddress.hpp"
 
 

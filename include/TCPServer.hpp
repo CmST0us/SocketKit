@@ -20,7 +20,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include "../Communicator.hpp"
+#include "Communicator.hpp"
 
 #include "SocketAddress.hpp"
 

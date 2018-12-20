@@ -7,11 +7,11 @@
 #include <memory>
 #include <unistd.h>
 
-#include "../EventPP/SocketAddress.hpp"
-#include "../EventPP/TCP/TCPServer.hpp"
-#include "../EventPP/UDP/UDPServer.hpp"
-#include "../EventPP/UDP/UDPConnection.hpp"
-#include "../EventPP/SocketAddress.hpp"
+#include <libSocketKit/SocketAddress.hpp>
+#include <libSocketKit/TCPServer.hpp>
+#include <libSocketKit/UDPServer.hpp>
+#include <libSocketKit/UDPConnection.hpp>
+#include <libSocketKit/SocketAddress.hpp>
 
 class Delegate: public ts::CommunicatorServiceDelegate {
     virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
