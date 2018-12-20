@@ -46,7 +46,7 @@ void TCPConnection::useSocketFd(SocketFd fd) {
 }
 
 bool TCPConnection::writeData(const uchar *data, int len) {
-    int s = send(this->mSocket, data, len, 0);
+    ssize_t s = send(this->mSocket, data, len, 0);
     if (s > 0) return true;
     return false;
 }
