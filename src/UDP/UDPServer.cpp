@@ -33,7 +33,7 @@ UDPServer::UDPServer(short port) {
 }
 
 UDPServer::~UDPServer() {
-    this->mRecvThread.join();
+    this->close();
 }
 
 bool UDPServer::createSocket() {
@@ -88,7 +88,7 @@ bool UDPServer::closeSocket() {
 }
 
 bool UDPServer::start() {
-    int ret = this->createSocket();
+    bool ret = this->createSocket();
     if (!ret) {
         throw SocketException::socksFdInitError;
     }
@@ -118,10 +118,11 @@ bool UDPServer::close() {
     this->mStatus.isClosing = true;
     int ret = ::close(this->mSocket);
     if (ret == 0) {
-        this->mRecvThread.join();
+        if (this->mRecvThread.joinable()) {
+            this->mRecvThread.join();
+        }
         return true;
     }
-    this->mStatus.isClosing = false;
     return false;
 }
 
@@ -144,6 +145,7 @@ void UDPServer::recvHandle() {
         if (result == -1) {
             //server error
             std::cout<<"Server Error"<<std::endl;
+            perror("Result:");
             this->willStop = true;
         } else if (result == 0) {
             // timeout
@@ -165,7 +167,7 @@ void UDPServer::recvHandle() {
                 }
             }
         }
-    } while (!this->willStop);
+    } while (!this->willStop && !this->mStatus.isClosing);
 }
 
 bool UDPServer::writeData(const uchar *data, int len) {
