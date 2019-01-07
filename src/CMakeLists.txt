@@ -23,6 +23,12 @@ target_include_directories(SocketKit PRIVATE
     ./UDP
 )
 
+## Windows Link Flags
+if (WIN32)
+target_link_libraries(SocketKit PRIVATE
+	ws2_32
+)
+endif()
 
 # Install
 ## Install Target

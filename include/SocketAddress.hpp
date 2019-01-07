@@ -8,15 +8,23 @@
 
 #ifndef SocketAddress_hpp
 #define SocketAddress_hpp
+
 #include <string>
 #include <thread>
+
+#if __linux__
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif
+
+#if _WIN32
+
+#endif
 
 #include "SocketException.hpp"
-namespace ts {
+namespace socketkit {
     
     struct SocketAddress {
     private:
