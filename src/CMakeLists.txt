@@ -42,6 +42,7 @@ install(
     ../include/TCPServer.hpp
     ../include/UDPConnection.hpp
     ../include/UDPServer.hpp
+	../include/SocketKit.hpp
     DESTINATION
     include/libSocketKit
 )
