@@ -13,9 +13,9 @@ typedef SOCKET SocketFd;
 typedef int ssize_t;
 typedef int socklen_t;
 #define SHUT_RDWR SD_BOTH
-#endif // _WIN32
 
-#if __linux__
+#else
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
