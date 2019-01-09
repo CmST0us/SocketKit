@@ -1,6 +1,6 @@
 //
 //  TCPServer.hpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
@@ -15,16 +15,12 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 
+#include "SocketKit.hpp"
 #include "Communicator.hpp"
-
 #include "SocketAddress.hpp"
 
-namespace ts{
+namespace socketkit{
     class TCPServer : public CommunicatorService {
     private:
         SocketFd mSocket;

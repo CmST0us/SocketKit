@@ -5,22 +5,29 @@
 #include <stdio.h>
 #include <iostream>
 #include <memory>
+#if __linux__
 #include <unistd.h>
+#endif
 
+#include <libSocketKit/SocketKit.hpp>
 #include <libSocketKit/SocketAddress.hpp>
 #include <libSocketKit/TCPServer.hpp>
 #include <libSocketKit/UDPServer.hpp>
 #include <libSocketKit/UDPConnection.hpp>
 #include <libSocketKit/SocketAddress.hpp>
 
-class Delegate: public ts::CommunicatorServiceDelegate {
-    virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
+class Delegate: public socketkit::CommunicatorServiceDelegate {
+    virtual void serviceDidReadData(socketkit::SocketAddress address, uchar *data, int len, std::shared_ptr<socketkit::CommunicatorService> service) {
         ::printf("[IN]Connect: %s\n", (const char *)data);
     };
 };
 
 int main(int argc, char **argv)
 {
+    bool ret = socketkit::initialize();
+    if (!ret) {
+        std::cout << "error" << std::endl;
+    }
     auto delegate = std::make_shared<Delegate>();
     std::weak_ptr<Delegate> wp(delegate);
     
@@ -28,9 +35,9 @@ int main(int argc, char **argv)
 //    server.mDelegate = wp;
 //    server.start();
     
-    ts::UDPServer server(14560);
+    socketkit::UDPServer server(14560);
     server.mDelegate = wp;
-    server.mClientAddress = ts::SocketAddress("127.0.0.1", 12001);
+    server.mClientAddress = socketkit::SocketAddress("127.0.0.1", 12001);
     server.start();
     
 //    ts::UDPConnection connect("127.0.0.1", 12001);
@@ -39,5 +46,6 @@ int main(int argc, char **argv)
 //    connect.writeData(d, 4);
 
     server.writeData(d, 4);
+    
     return 0;
 }

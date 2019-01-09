@@ -1,22 +1,18 @@
 //
 //  TCPServer.cpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
 //
 
 #include <iostream>
-#include <sys/select.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
-#include <sys/fcntl.h>
 
+#include "SocketKit.hpp"
 #include "TCPServer.hpp"
 #include "TCPConnection.hpp"
 
-using namespace ts;
+using namespace socketkit;
 
 TCPServer::TCPServer() {
     this->mSocket = -1;
@@ -45,9 +41,18 @@ TCPServer::~TCPServer() {
 bool TCPServer::createSocket() {
     SocketFd socket = ::socket(PF_INET, SOCK_STREAM, 0);
     if (socket != -1) {
+#if _WIN32
+        unsigned long ul = 1;
+        int ret = ioctlsocket(socket, FIONBIO, (unsigned long *)&ul);//设置成非阻塞模式
+        if (ret != 0) {
+            return false;
+        }
+#else
         if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
             return false;
         }
+#endif
+
         
         int option = true;
         socklen_t optionLen = sizeof(option);
@@ -56,15 +61,21 @@ bool TCPServer::createSocket() {
         l.l_linger = 0;
         l.l_onoff = 1;
         int intval = 1;
-        
+#if _WIN32
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (char *)&option, optionLen);
+        setsockopt(socket, SOL_SOCKET, SO_LINGER, (char *)&l, sizeof(struct linger));
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (char *)&intval, sizeof(int));
+        setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char *)&intval, sizeof(int));
+#else
         setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optionLen);
         setsockopt(socket, SOL_SOCKET, SO_LINGER, &l, sizeof(struct linger));
         setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &intval, sizeof(int));
         setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, &intval, sizeof(int));
         setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &intval, sizeof(int));
-        
+#endif
         
         this->mSocket = socket;
+        this->mStatus.isInit = true;
         return true;
     }
     return false;
@@ -120,7 +131,11 @@ bool TCPServer::resume() {
 }
 
 bool TCPServer::close() {
-    ::close(this->mSocket);
+#if _WIN32
+    int ret = ::closesocket(this->mSocket);
+#else
+    int ret = ::close(this->mSocket);
+#endif
     this->mAccpetThread.join();
     return true;
 }
@@ -133,11 +148,11 @@ void TCPServer::accpetHandle() {
     do {
         FD_ZERO(&reads);
         FD_SET(this->mSocket, &reads);
-        int fd_max = this->mSocket + 1;
+        SocketFd fd_max = this->mSocket + 1;
         
         timeout.tv_sec = 5;
         timeout.tv_usec = 5000;
-        result = ::select(fd_max, &reads, 0, 0, &timeout);
+        result = ::select((int)fd_max, &reads, 0, 0, &timeout);
         if (result == -1) {
             //server error
             std::cout<<"Server Error"<<std::endl;
@@ -149,7 +164,7 @@ void TCPServer::accpetHandle() {
                 // accept
                 struct sockaddr_in acceptSocketAddrIn;
                 socklen_t addrInLen = sizeof(acceptSocketAddrIn);
-                int acceptSocket = ::accept(this->mSocket, (struct sockaddr *)&acceptSocketAddrIn, &addrInLen);
+                SocketFd acceptSocket = ::accept(this->mSocket, (struct sockaddr *)&acceptSocketAddrIn, &addrInLen);
                 auto client = std::make_shared<TCPConnection>();
                 client->useSocketFd(acceptSocket);
                 client->mSocketAddress.useSockAddrIn(acceptSocketAddrIn);

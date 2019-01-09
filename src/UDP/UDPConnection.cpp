@@ -1,17 +1,15 @@
 //
 //  UDPConnection.cpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
 //
 
-#include <iostream>
-#include <unistd.h>
-#include <stdio.h>
+#include "SocketKit.hpp"
 #include "UDPConnection.hpp"
 
-using namespace ts;
+using namespace socketkit;
 
 UDPConnection::UDPConnection() {
     this->mSocket = -1;
@@ -46,7 +44,11 @@ void UDPConnection::useSocketFd(SocketFd fd) {
 
 bool UDPConnection::writeData(const uchar *data, int len) {
     sockaddr_in sockaddrIn = this->mSocketAddress.getSockaddrIn();
+#if _WIN32
+    ssize_t sendLen = ::sendto(this->mSocket, (char *)data, len, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+#else
     ssize_t sendLen = ::sendto(this->mSocket, data, len, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+#endif
     if (sendLen > 0) return true;
     return false;
 }
@@ -70,6 +72,10 @@ bool UDPConnection::resume() {
 
 bool UDPConnection::close() {
     shutdown(this->mSocket, SHUT_RDWR);
+#if _WIN32
+    ::closesocket(this->mSocket);
+#else
     ::close(this->mSocket);
+#endif
     return true;
 }

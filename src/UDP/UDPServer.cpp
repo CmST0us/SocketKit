@@ -1,16 +1,15 @@
 //
 //  UDPServer.cpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
 //
 
-#include <iostream>
-#include <sys/fcntl.h>
+#include "SocketKit.hpp"
 #include "UDPServer.hpp"
 
-using namespace ts;
+using namespace socketkit;
 
 UDPServer::UDPServer() {
     this->mSocket = -1;
@@ -39,10 +38,17 @@ UDPServer::~UDPServer() {
 bool UDPServer::createSocket() {
     SocketFd socket = ::socket(PF_INET, SOCK_DGRAM, 0);
     if (socket != -1) {
+#if _WIN32
+        unsigned long ul = 1;
+        int ret = ioctlsocket(socket, FIONBIO, (unsigned long *)&ul);//设置成非阻塞模式
+        if (ret != 0) {
+            return false;
+        }
+#else
         if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
             return false;
         }
-        
+#endif
         int option = true;
         socklen_t optionLen = sizeof(option);
         
@@ -51,11 +57,16 @@ bool UDPServer::createSocket() {
         l.l_onoff = 1;
         int intval = 1;
         
+#if _WIN32
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (char *)&option, optionLen);
+        setsockopt(socket, SOL_SOCKET, SO_LINGER, (char *)&l, sizeof(struct linger));
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (char *)&intval, sizeof(int));
+#else
         setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optionLen);
         setsockopt(socket, SOL_SOCKET, SO_LINGER, &l, sizeof(struct linger));
         setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &intval, sizeof(int));
         setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &intval, sizeof(int));
-        
+#endif
         
         this->mSocket = socket;
         this->mStatus.isInit = true;
@@ -80,7 +91,11 @@ bool UDPServer::bindSocket() {
 
 bool UDPServer::closeSocket() {
     this->mStatus.isClosing = true;
+#if _WIN32
+    int ret = ::closesocket(this->mSocket);
+#else
     int ret = ::close(this->mSocket);
+#endif
     if (ret == 0) {
         return true;
     }
@@ -116,7 +131,11 @@ bool UDPServer::resume() {
 
 bool UDPServer::close() {
     this->mStatus.isClosing = true;
+#if _WIN32
+    int ret = ::closesocket(this->mSocket);
+#else
     int ret = ::close(this->mSocket);
+#endif
     if (ret == 0) {
         if (this->mRecvThread.joinable()) {
             this->mRecvThread.join();
@@ -137,11 +156,11 @@ void UDPServer::recvHandle() {
         
         FD_ZERO(&reads);
         FD_SET(this->mSocket, &reads);
-        int fd_max = this->mSocket + 1;
+        SocketFd fd_max = this->mSocket + 1;
         
         timeout.tv_sec = 5;
         timeout.tv_usec = 5000;
-        result = ::select(fd_max, &reads, 0, 0, &timeout);
+        result = ::select((int)fd_max, &reads, 0, 0, &timeout);
         if (result == -1) {
             //server error
             std::cout<<"Server Error"<<std::endl;
@@ -154,8 +173,11 @@ void UDPServer::recvHandle() {
                 // accept
                 struct sockaddr_in recvSocketAddrIn;
                 socklen_t addrInLen = sizeof(recvSocketAddrIn);
-                
+#if _WIN32
+                ssize_t recvLen = ::recvfrom(this->mSocket, (char *)recvBuffer, UDP_BUFFER_SIZE, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
+#else
                 ssize_t recvLen = ::recvfrom(this->mSocket, recvBuffer, UDP_BUFFER_SIZE, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
+#endif
                 if (recvLen == -1) {
                     continue;
                 }
@@ -172,7 +194,11 @@ void UDPServer::recvHandle() {
 
 bool UDPServer::writeData(const uchar *data, int len) {
     sockaddr_in sockaddrIn = this->mClientAddress.getSockaddrIn();
+#if _WIN32
+    ssize_t sendLen = ::sendto(this->mSocket, (char *)data, len, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+#else
     ssize_t sendLen = ::sendto(this->mSocket, data, len, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+#endif
     if (sendLen < 0) {
         return false;
     }

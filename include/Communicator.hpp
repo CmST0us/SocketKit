@@ -1,6 +1,6 @@
 //
 //  Communicator.hpp
-//  EventPP
+//  SocketKit
 //
 //  Created by eric.wu on 2018/10/12.
 //  Copyright © 2018年 CmST0us. All rights reserved.
@@ -14,9 +14,8 @@
 #include "SocketAddress.hpp"
 
 typedef unsigned char uchar;
-typedef int SocketFd;
 
-namespace ts {
+namespace socketkit {
     class Communicator;
     class CommunicatorService;
     
@@ -40,13 +39,13 @@ namespace ts {
     
     class CommunicatorServiceDelegate {
     public:
-        virtual void serviceDidReadData(ts::SocketAddress address, uchar *data, int len, std::shared_ptr<ts::CommunicatorService> service) {
+        virtual void serviceDidReadData(SocketAddress address, uchar *data, int len, std::shared_ptr<CommunicatorService> service) {
             
         }
-        virtual void serviceDidUpdateStatus(ts::CommunicatorService &service) {
+        virtual void serviceDidUpdateStatus(CommunicatorService &service) {
             
         }
-        virtual void serviceDidReceiveEvent(ts::CommunicatorServiceEvent event) {
+        virtual void serviceDidReceiveEvent(CommunicatorServiceEvent event) {
             
         };
     };
@@ -78,7 +77,7 @@ namespace ts {
             return false;
         }
         CommunicatorServiceStatus mStatus = {0};
-        std::weak_ptr<ts::CommunicatorServiceDelegate> mDelegate;
+        std::weak_ptr<CommunicatorServiceDelegate> mDelegate;
     };
     
 };

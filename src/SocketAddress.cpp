@@ -1,6 +1,6 @@
 //
 //  SocketAddress.cpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "SocketAddress.hpp"
 #include <sstream>
-using namespace ts;
+using namespace socketkit;
 
 struct sockaddr_in SocketAddress::getSockaddrIn() const {
     struct sockaddr_in addr;

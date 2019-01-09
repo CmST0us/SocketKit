@@ -1,19 +1,18 @@
 //
 //  TCPConnection.cpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
 //
 
 #include <iostream>
-#include <unistd.h>
-#include <stdio.h>
 
+#include "SocketKit.hpp"
 #include "TCPConnection.hpp"
 #include "SocketException.hpp"
 
-using namespace ts;
+using namespace socketkit;
 
 TCPConnection::TCPConnection() {
     this->mSocket = -1;
@@ -46,7 +45,11 @@ void TCPConnection::useSocketFd(SocketFd fd) {
 }
 
 bool TCPConnection::writeData(const uchar *data, int len) {
+#if _WIN32
+    ssize_t s = send(this->mSocket, (const char *)data, len, 0);
+#else
     ssize_t s = send(this->mSocket, data, len, 0);
+#endif
     if (s > 0) return true;
     return false;
 }
@@ -65,6 +68,10 @@ bool TCPConnection::resume() {
 
 bool TCPConnection::close() {
     shutdown(this->mSocket, SHUT_RDWR);
+#if _WIN32
+    ::closesocket(this->mSocket);
+#else
     ::close(this->mSocket);
+#endif
     return true;
 }

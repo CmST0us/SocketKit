@@ -36,3 +36,7 @@
 # CMake
 build
 */CMakeCache.txt
+
+# Visual Studio
+.vs
+CMakeSettings.json
