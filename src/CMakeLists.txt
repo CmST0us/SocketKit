@@ -23,7 +23,6 @@ target_include_directories(SocketKit PRIVATE
     ./UDP
 )
 
-
 # Install
 ## Install Target
 install(
@@ -43,6 +42,7 @@ install(
     ../include/TCPServer.hpp
     ../include/UDPConnection.hpp
     ../include/UDPServer.hpp
+	../include/SocketKit.hpp
     DESTINATION
     include/libSocketKit
 )

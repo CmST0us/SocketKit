@@ -1,6 +1,6 @@
 //
 //  UDPConnection.hpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
@@ -11,10 +11,11 @@
 
 #include <memory>
 
+#include "SocketKit.hpp"
 #include "SocketAddress.hpp"
 #include "Communicator.hpp"
 
-namespace ts {
+namespace socketkit {
     class UDPConnection : public CommunicatorService {
     private:
         

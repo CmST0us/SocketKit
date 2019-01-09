@@ -1,6 +1,6 @@
 //
 //  UDPServer.hpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
@@ -9,22 +9,17 @@
 #ifndef UDPServer_hpp
 #define UDPServer_hpp
 
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include <memory>
 #include <map>
 
+#include "SocketKit.hpp"
 #include "Communicator.hpp"
 #include "SocketAddress.hpp"
 
 
 #define UDP_BUFFER_SIZE 1500
 
-namespace ts {
+namespace socketkit {
     class UDPServer : public CommunicatorService {
     private:
         SocketFd mSocket;

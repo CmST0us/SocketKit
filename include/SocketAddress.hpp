@@ -1,6 +1,6 @@
 //
 //  SocketAddress.hpp
-//  EventPP
+//  SocketKit
 //
 //  Created by CmST0us on 2017/9/4.
 //  Copyright © 2017年 CmST0us. All rights reserved.
@@ -8,15 +8,16 @@
 
 #ifndef SocketAddress_hpp
 #define SocketAddress_hpp
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <string>
 #include <thread>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 
+#include "SocketKit.hpp"
 #include "SocketException.hpp"
-namespace ts {
+namespace socketkit {
     
     struct SocketAddress {
     private:
