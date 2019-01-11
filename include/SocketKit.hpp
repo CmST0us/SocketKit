@@ -28,6 +28,11 @@ typedef int socklen_t;
 typedef int SocketFd;
 #endif
 
+#define SOCKETKIT_ASSET(x) \
+#ifdef DEBUG \
+assert(x);\
+#endif
+
 namespace socketkit
 {
     bool initialize();

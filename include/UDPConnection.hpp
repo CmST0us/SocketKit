@@ -16,7 +16,7 @@
 #include "Communicator.hpp"
 
 namespace socketkit {
-    class UDPConnection : public CommunicatorService {
+    class UDPConnection : public Communicator {
     private:
         
         SocketFd mSocket;

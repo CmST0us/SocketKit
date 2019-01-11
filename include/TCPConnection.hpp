@@ -15,7 +15,7 @@
 #include "Communicator.hpp"
 
 namespace socketkit {
-    class TCPConnection : public CommunicatorService {
+    class TCPConnection : public Communicator {
     private:
         
         SocketFd mSocket;

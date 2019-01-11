@@ -21,7 +21,7 @@
 #include "SocketAddress.hpp"
 
 namespace socketkit{
-    class TCPServer : public CommunicatorService {
+    class TCPServer : public Communicator {
     private:
         SocketFd mSocket;
         std::thread mAccpetThread;

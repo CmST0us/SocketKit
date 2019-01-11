@@ -20,7 +20,7 @@
 #define UDP_BUFFER_SIZE 1500
 
 namespace socketkit {
-    class UDPServer : public CommunicatorService {
+    class UDPServer : public Communicator {
     private:
         SocketFd mSocket;
         std::thread mRecvThread;
