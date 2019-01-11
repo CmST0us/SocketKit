@@ -36,3 +36,6 @@
 # CMake
 build
 */CMakeCache.txt
+
+*.vs/
+*CMakeSettings.json
