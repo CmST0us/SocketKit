@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "SocketKit.hpp"
-#include "SocketAddress.hpp"
+#include "Endpoint.hpp"
 #include "Communicator.hpp"
 
 namespace socketkit {

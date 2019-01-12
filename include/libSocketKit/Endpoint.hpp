@@ -17,13 +17,38 @@ class Endpoint final : public utils::NoCopyable {
 
 public:
 
-    Endpoint(std::string domain, short port);
-    ~Endpoint();
+    Endpoint(std::string domain, short port) : _endpointDomain{domain},
+                                               _endpointPort{port} {
+        try {
+            std::string ip = Endpoint::getIpByDomain(_endpointDomain);
+            _endpointIp = ip;
+        } catch (SocketException e) {
+            throw e;
+        }
+    };
 
-    std::string getEndpointIp() const;
-    std::string getEndpointDomain() const;
-    short getEndpointPort() const;
-    struct sockaddr_in getEndpointSockaddrIn() const;
+    ~Endpoint() {};
+
+    std::string getEndpointIp() const {
+        return _endpointIp;
+    };
+
+    std::string getEndpointDomain() const {
+        return _endpointDomain;
+    };
+
+    short getEndpointPort() const {
+        return _endpointPort;
+    };
+
+    struct sockaddr_in getEndpointSockaddrIn() const {
+        struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(_endpointPort);
+        addr.sin_addr.s_addr = inet_addr(_endpointIp.c_str());
+        return addr;
+    };
 
     static std::shared_ptr<Endpoint> create(struct sockaddr_in addr_in) {
         if (addr_in.sin_family == AF_INET) {

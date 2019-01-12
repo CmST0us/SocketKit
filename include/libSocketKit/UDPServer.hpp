@@ -14,7 +14,7 @@
 
 #include "SocketKit.hpp"
 #include "Communicator.hpp"
-#include "SocketAddress.hpp"
+#include "Endpoint.hpp"
 
 
 #define UDP_BUFFER_SIZE 1500

@@ -11,7 +11,7 @@
 
 #include <memory>
 
-#include "SocketAddress.hpp"
+#include "Endpoint.hpp"
 #include "Communicator.hpp"
 
 namespace socketkit {

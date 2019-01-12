@@ -18,7 +18,7 @@
 
 #include "SocketKit.hpp"
 #include "Communicator.hpp"
-#include "SocketAddress.hpp"
+#include "Endpoint.hpp"
 
 namespace socketkit{
     class TCPServer : public Communicator {

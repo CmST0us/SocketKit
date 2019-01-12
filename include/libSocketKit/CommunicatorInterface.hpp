@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <memory>
 
-#include "SocketAddress.hpp"
+#include "Endpoint.hpp"
 #include "SocketKit.hpp"
 
 typedef unsigned char uchar;
@@ -42,7 +42,7 @@ public:
     virtual ~IRemoteCommunicator() = default;
 
     virtual void connect(SocketAddress) = 0;
-    virtual const SocketAddress& connectingEndpoint() const = 0;
+    virtual const Endpoint* connectingEndpoint() const = 0;
 };
 
 class ILocalCommunicator : public ICommunicator {
