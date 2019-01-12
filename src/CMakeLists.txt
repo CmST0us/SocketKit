@@ -35,14 +35,19 @@ install(
 ## Install Header
 install(
     FILES
-    ../include/Communicator.hpp
-    ../include/SocketAddress.hpp
-    ../include/SocketException.hpp
-    ../include/TCPConnection.hpp
-    ../include/TCPServer.hpp
-    ../include/UDPConnection.hpp
-    ../include/UDPServer.hpp
-	../include/SocketKit.hpp
+		../include/CommunicatorInterface.hpp
+        ../include/CommunicatorStateMachine.hpp
+		../include/SocketAddress.hpp
+		../include/SocketException.hpp
+		../include/TCPConnection.hpp
+		../include/TCPServer.hpp
+		../include/UDPConnection.hpp
+		../include/UDPServer.hpp
+		../include/SocketKit.hpp
+		../include/Endpoint.hpp
+		../include/NoCopyable.hpp
+		../include/Runloop.hpp
+        ../include/AsyncInterface.hpp
     DESTINATION
-    include/libSocketKit
+		include/libSocketKit
 )

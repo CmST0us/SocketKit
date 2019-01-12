@@ -1,0 +1,57 @@
+//
+//  CommunicatorInterface.hpp
+//  SocketKit
+//
+//  Created by CmST0us on 2018/10/12.
+//  Copyright © 2018年 CmST0us. All rights reserved.
+//
+
+#pragma once
+
+#include <stdio.h>
+#include <memory>
+
+#include "SocketAddress.hpp"
+#include "SocketKit.hpp"
+
+typedef unsigned char uchar;
+
+namespace socketkit
+{
+
+enum class DataType {
+    Stream,
+    Packet
+};
+
+class ICommunicator: public IAsync {
+public:
+    using DataEventHandler = std::function<void(uchar *buffer, int *size)>;
+
+    ~ICommunicator() = default;
+    virtual void read(DataEventHandler) = 0;
+    virtual void write(uchar *buffer, int *size);
+    virtual void closeWrite() = 0;
+
+    virtual const CommunicatorState& stateMachine() const = 0;
+    virtual DataType communicatorDataType() const = 0;
+};
+
+class IRemoteCommunicator : public ICommunicator {
+public:
+    virtual ~IRemoteCommunicator() = default;
+
+    virtual void connect(SocketAddress) = 0;
+    virtual const SocketAddress& connectingEndpoint() const = 0;
+};
+
+class ILocalCommunicator : public ICommunicator {
+public:
+    virtual ~ILocalCommunicator() = default;
+
+    virtual void open() = 0;
+    virtual void continueFinished() = 0;
+};
+
+};
+
