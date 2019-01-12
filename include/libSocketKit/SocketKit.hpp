@@ -24,18 +24,26 @@ typedef int socklen_t;
 #include <netinet/tcp.h>
 #include <sys/fcntl.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
 
 typedef int SocketFd;
 #endif
 
-#define SOCKETKIT_ASSET(x) \
-#ifdef DEBUG \
-assert(x);\
+#ifdef DEBUG
+#define SOCKETKIT_ASSET(x) assert(x)
+#else
+#define SOCKETKIT_ASSET(x)
 #endif
 
 namespace socketkit
 {
-    bool initialize();
-    bool release();
 
-}
+bool initialize();
+bool release();
+
+namespace utils {
+void makeSocketNonblock(SocketFd socket);
+
+};
+
+};

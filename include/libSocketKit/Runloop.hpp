@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "Runloop.hpp"
+#include <thread>
+#include <vector>
+#include "NoCopyable.hpp"
 
 namespace socketkit {
 namespace utils {
@@ -63,7 +65,7 @@ public:
         for (RunloopTaskHandler handler : _taskQueue) {
             handler();
         }
-        _taskQueue.empty();
+        _taskQueue.clear();
         _taskQueueLock.unlock();
     }
 

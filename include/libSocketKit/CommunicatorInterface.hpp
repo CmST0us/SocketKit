@@ -13,27 +13,39 @@
 
 #include "Endpoint.hpp"
 #include "SocketKit.hpp"
+#include "AsyncInterface.hpp"
+#include "CommunicatorStateMachine.hpp"
 
 typedef unsigned char uchar;
 
 namespace socketkit
 {
 
+enum class CommunicatorEvent {
+    None,
+    OpenCompleted,
+    ErrorOccurred,
+    EndEncountered,
+    HasBytesAvailable,
+    HasSpaceAvailable,
+};
+
 enum class DataType {
     Stream,
     Packet
 };
 
-class ICommunicator: public IAsync {
+class ICommunicator: public utils::IAsync {
 public:
-    using DataEventHandler = std::function<void(uchar *buffer, int *size)>;
+    using DataEventHandler = std::function<void(uchar *buffer, int size)>;
+    using CommunicatorEventHandler = std::function<void(CommunicatorEvent event)>;
 
-    ~ICommunicator() = default;
-    virtual void read(DataEventHandler) = 0;
-    virtual void write(uchar *buffer, int *size);
+    virtual ~ICommunicator() = default;
+    virtual void read(DataEventHandler handler) = 0;
+    virtual void write(uchar *buffer, int &size) = 0;
     virtual void closeWrite() = 0;
 
-    virtual const CommunicatorState& stateMachine() const = 0;
+    virtual const CommunicatorStateMachine& stateMachine() const = 0;
     virtual DataType communicatorDataType() const = 0;
 };
 
@@ -41,7 +53,7 @@ class IRemoteCommunicator : public ICommunicator {
 public:
     virtual ~IRemoteCommunicator() = default;
 
-    virtual void connect(SocketAddress) = 0;
+    virtual void connect(std::shared_ptr<Endpoint>) = 0;
     virtual const Endpoint* connectingEndpoint() const = 0;
 };
 

@@ -91,7 +91,7 @@ public:
     bool isReadable() const {
         return !_reading && // 不处于读取状态 并且 (本地正在建立 或者 状态建立完成 或者 关闭时,读未关闭)
                ((_type == CommunicatorType::Local && _state == CommunicatorState::Establishing) ||
-                state_ == CommunicatorState::Established ||
+                _state == CommunicatorState::Established ||
                 (_state == CommunicatorState::Closing && !_readClosed));
     }
 
@@ -139,7 +139,7 @@ public:
 
         if (!((_state == CommunicatorState::Establishing) ||
               (_state == CommunicatorState::Init))) return;
-
+        _state = CommunicatorState::Established;
     }
 
     void readBegin() {
