@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include <queue>
 #include <thread>
-#include <vector>
 #include "NoCopyable.hpp"
 
 namespace socketkit {
@@ -25,6 +25,7 @@ public:
         if (isRunning()) {
             stop();
             _runloopThread.join();
+
         }
     }
 
@@ -38,6 +39,9 @@ public:
 
     void stop() {
         _canceled = true;
+#if DEBUG
+        std::cout<<"Runloop thread "<<_runloopThread.get_id()<<"will exit"<<std::endl;
+#endif
     }
 
     void run() {
@@ -54,19 +58,18 @@ public:
 
     void post(RunloopTaskHandler task) {
         if (isRunning()) {
-            _taskQueueLock.lock();
-            _taskQueue.push_back(task);
-            _taskQueueLock.unlock();
+            _taskQueuePushLock.lock();
+            _taskQueue.push(task);
+            _taskQueuePushLock.unlock();
         }
     }
 
     void dispatch() {
-        _taskQueueLock.lock();
-        for (RunloopTaskHandler handler : _taskQueue) {
-            handler();
+        while (!_taskQueue.empty()) {
+            RunloopTaskHandler task = _taskQueue.front();
+            task();
+            _taskQueue.pop();
         }
-        _taskQueue.clear();
-        _taskQueueLock.unlock();
     }
 
 
@@ -80,9 +83,9 @@ private:
     }};
 
     std::thread _runloopThread;
-    std::vector<RunloopTaskHandler> _taskQueue;
+    std::queue<RunloopTaskHandler> _taskQueue;
 
-    std::mutex _taskQueueLock;
+    std::mutex _taskQueuePushLock;
     AtomBool _canceled{false};
     AtomBool _running{false};
 
