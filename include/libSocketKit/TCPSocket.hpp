@@ -30,7 +30,7 @@ public:
     virtual const Endpoint* connectingEndpoint() const override;
 
     // Local
-    TCPSocket(SocketFd socket);
+    TCPSocket(SocketFd socket, std::shared_ptr<Endpoint>);
 
     virtual void open() override;
     virtual void continueFinished() override;

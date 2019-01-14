@@ -25,6 +25,7 @@ add_executable(
     test_tcpsocket.cpp
     ../src/TCP/TCPSocket.cpp
     ../src/TCP/TCPConnector.cpp
+    ../src/TCP/TCPAcceptor.cpp
     ../src/SocketException.cpp
     ../src/SocketKit.cpp
 )

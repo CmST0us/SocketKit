@@ -98,6 +98,7 @@ void TCPConnector::initSocket() {
     _socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_socket < 0) {
         _stateMachine.errored();
+        throw SocketException::socketFdInitError;
         return;
     }
 
@@ -106,14 +107,16 @@ void TCPConnector::initSocket() {
 
 void TCPConnector::closeSocket() {
 #if _WIN32
-    ::closesocket(_socket);
+        ::closesocket(_socket);
 #else
-    ::close(_socket);
+        ::close(_socket);
 #endif
 }
 
 void TCPConnector::connect(std::shared_ptr<Endpoint> endpoint) {
-    _stateMachine.connectBegin();
-    _endpoint = endpoint;
+    getRunloop()->post([this, endpoint]() {
+        _stateMachine.connectBegin();
+        _endpoint = endpoint;
+    });
 }
 

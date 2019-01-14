@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "SocketKit.hpp"
+
 /*
  * Communicator State Machine
  * Reference from libnekit(https://github.com/zhuhaow/libnekit)

@@ -8,8 +8,9 @@ TCPSocket::TCPSocket() : _stateMachine{CommunicatorType::Remote} {
     setupRunloop();
 }
 
-TCPSocket::TCPSocket(SocketFd socket) : _stateMachine{CommunicatorType::Local} {
-
+TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _stateMachine{CommunicatorType::Local},
+                                                                      _endpoint{ep} {
+    setupRunloop();
 }
 
 utils::Runloop* TCPSocket::getRunloop() {
@@ -18,38 +19,48 @@ utils::Runloop* TCPSocket::getRunloop() {
 }
 
 void TCPSocket::read(DataEventHandler handler) {
-    getRunloop()->post([this, handler](){
-        uchar buffer[10240] = {0};
-        int size = 10240;
-        _stateMachine.readBegin();
+    if (_stateMachine.isReadable()) {
+        getRunloop()->post([this, handler](){
+            uchar buffer[10240] = {0};
+            int size = 10240;
+            _stateMachine.readBegin();
 #if _WIN32
-        int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
+            int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
 #else
-        int readLen = (int)::recv(_socket, buffer, size, 0);
+            int readLen = (int)::recv(_socket, buffer, size, 0);
 #endif
-        size = readLen;
-        _stateMachine.readEnd();
-        handler(buffer, size);
-    });
+            size = readLen;
+            _stateMachine.readEnd();
+            handler(buffer, size);
+        });
+    } else {
+        handler(NULL, -1);
+    }
 }
 
 void TCPSocket::write(uchar *buffer, int &size) {
-    getRunloop()->post([this, buffer, &size](){
-        _stateMachine.writeBegin();
+    if (_stateMachine.isWritable()) {
+        getRunloop()->post([this, buffer, &size](){
+            _stateMachine.writeBegin();
 #if _WIN32
-        int writeLen = (int)::send(_socket, (char *)buffer, size, 0);
+            int writeLen = (int)::send(_socket, (char *)buffer, size, 0);
 #else
-        int writeLen = (int)::send(_socket, buffer, size, 0);
+            int writeLen = (int)::send(_socket, buffer, size, 0);
 #endif
-        size = writeLen;
-        _stateMachine.writeEnd();
-    });
+            size = writeLen;
+            _stateMachine.writeEnd();
+        });
+    } else {
+        size = -1;
+    }
 }
 
 void TCPSocket::closeWrite() {
-    _stateMachine.writeCloseBegin();
-    shutdown(_socket, SHUT_WR);
-    _stateMachine.writeCloseEnd();
+    getRunloop()->post([this]() {
+        _stateMachine.writeCloseBegin();
+        shutdown(_socket, SHUT_WR);
+        _stateMachine.writeCloseEnd();
+    });
 }
 
 const CommunicatorStateMachine& TCPSocket::stateMachine() const {
@@ -64,6 +75,8 @@ void TCPSocket::connect(std::shared_ptr<Endpoint> endpoint) {
     _connector = std::unique_ptr<TCPConnector>(new TCPConnector());
     _endpoint = endpoint;
     TCPConnector *connector = _connector.get();
+    connector->getRunloop()->run();
+
     connector->mEventHandler = [this](TCPConnector *connector, TCPConnectorEvent event, SocketFd socket) {
         switch (event) {
             case TCPConnectorEvent::Connected :
@@ -83,7 +96,6 @@ void TCPSocket::connect(std::shared_ptr<Endpoint> endpoint) {
 
     _stateMachine.connectBegin();
     connector->connect(endpoint);
-    connector->getRunloop()->run();
 }
 
 const Endpoint* TCPSocket::connectingEndpoint() const {
@@ -91,17 +103,23 @@ const Endpoint* TCPSocket::connectingEndpoint() const {
 }
 
 void TCPSocket::open() {
+    getRunloop()->post([this]() {
+        _stateMachine.connectBegin();
+    });
 
 }
 
 void TCPSocket::continueFinished() {
-
+    getRunloop()->post([this]() {
+        _stateMachine.connected();
+    });
 }
 
 void TCPSocket::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while(!runloop->isCanceled()) {
             if (_stateMachine.state() != CommunicatorState::Established) {
+                runloop->dispatch();
                 continue;
             }
 
@@ -171,8 +189,8 @@ void TCPSocket::setupRunloop() {
 
 void TCPSocket::closeSocket() {
 #if _WIN32
-    ::closesocket(_socket);
+        ::closesocket(_socket);
 #else
-    ::close(_socket);
+        ::close(_socket);
 #endif
 }
