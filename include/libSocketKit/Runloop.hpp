@@ -24,8 +24,9 @@ public:
     ~Runloop() {
         if (isRunning()) {
             stop();
-            _runloopThread.join();
-
+            if (_runloopThread.joinable()) {
+                _runloopThread.join();
+            }
         }
     }
 
@@ -57,11 +58,9 @@ public:
     }
 
     void post(RunloopTaskHandler task) {
-        if (isRunning()) {
-            _taskQueuePushLock.lock();
-            _taskQueue.push(task);
-            _taskQueuePushLock.unlock();
-        }
+        _taskQueuePushLock.lock();
+        _taskQueue.push(task);
+        _taskQueuePushLock.unlock();
     }
 
     void dispatch() {
