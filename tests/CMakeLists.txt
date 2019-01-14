@@ -16,11 +16,6 @@ else()
 endif()
 
 add_executable(
-    test_runloop
-    test_runloop.cpp
-)
-
-add_executable(
     test_tcpsocket
     test_tcpsocket.cpp
     ../src/TCP/TCPSocket.cpp
@@ -44,6 +39,6 @@ target_include_directories(
 )
 
 target_include_directories(
-        test_udpsocket PUBLIC
-        ../include/libSocketKit
+    test_udpsocket PUBLIC
+    ../include/libSocketKit
 )
