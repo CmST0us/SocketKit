@@ -38,7 +38,7 @@ enum class DataType {
 class ICommunicator: public utils::IAsync {
 public:
     using DataEventHandler = std::function<void(uchar *buffer, int size)>;
-    using CommunicatorEventHandler = std::function<void(CommunicatorEvent event)>;
+    using CommunicatorEventHandler = std::function<void(ICommunicator *, CommunicatorEvent event)>;
 
     virtual ~ICommunicator() = default;
     virtual void read(DataEventHandler handler) = 0;
