@@ -86,7 +86,7 @@ private:
     std::queue<RunloopTaskHandler> _taskQueue;
 
     std::mutex _taskQueuePushLock;
-    AtomBool _canceled{false};
+    volatile AtomBool _canceled{false};
     AtomBool _running{false};
 
 };
