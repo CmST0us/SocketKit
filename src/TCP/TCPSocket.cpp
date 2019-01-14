@@ -8,7 +8,8 @@ TCPSocket::TCPSocket() : _stateMachine{CommunicatorType::Remote} {
     setupRunloop();
 }
 
-TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _stateMachine{CommunicatorType::Local},
+TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _socket{socket},
+                                                                      _stateMachine{CommunicatorType::Local},
                                                                       _endpoint{ep} {
     setupRunloop();
 }
@@ -19,40 +20,32 @@ utils::Runloop* TCPSocket::getRunloop() {
 }
 
 void TCPSocket::read(DataEventHandler handler) {
-    if (_stateMachine.isReadable()) {
-        getRunloop()->post([this, handler](){
-            uchar buffer[10240] = {0};
-            int size = 10240;
-            _stateMachine.readBegin();
+    getRunloop()->post([this, handler](){
+        uchar buffer[10240] = {0};
+        int size = 10240;
+        _stateMachine.readBegin();
 #if _WIN32
-            int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
+        int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
 #else
-            int readLen = (int)::recv(_socket, buffer, size, 0);
+        int readLen = (int)::recv(_socket, buffer, size, 0);
 #endif
-            size = readLen;
-            _stateMachine.readEnd();
-            handler(buffer, size);
-        });
-    } else {
-        handler(NULL, -1);
-    }
+        size = readLen;
+        _stateMachine.readEnd();
+        handler(buffer, size);
+    });
 }
 
 void TCPSocket::write(uchar *buffer, int &size) {
-    if (_stateMachine.isWritable()) {
-        getRunloop()->post([this, buffer, &size](){
-            _stateMachine.writeBegin();
+    getRunloop()->post([this, buffer, &size](){
+        _stateMachine.writeBegin();
 #if _WIN32
-            int writeLen = (int)::send(_socket, (char *)buffer, size, 0);
+        int writeLen = (int)::send(_socket, (char *)buffer, size, 0);
 #else
-            int writeLen = (int)::send(_socket, buffer, size, 0);
+        int writeLen = (int)::send(_socket, buffer, size, 0);
 #endif
-            size = writeLen;
-            _stateMachine.writeEnd();
-        });
-    } else {
-        size = -1;
-    }
+        size = writeLen;
+        _stateMachine.writeEnd();
+    });
 }
 
 void TCPSocket::closeWrite() {
