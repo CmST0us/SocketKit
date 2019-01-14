@@ -35,6 +35,7 @@ enum class DataType {
     Packet
 };
 
+// [TODO] 写函数需要异步传递数据，需要一个std::shared_ptr<utils::Buffer>
 class ICommunicator: public utils::IAsync {
 public:
     using DataEventHandler = std::function<void(uchar *buffer, int size)>;
