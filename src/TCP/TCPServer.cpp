@@ -10,7 +10,6 @@
 
 #include "SocketKit.hpp"
 #include "TCPServer.hpp"
-#include "TCPConnection.hpp"
 
 using namespace socketkit;
 
