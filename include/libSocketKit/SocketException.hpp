@@ -27,14 +27,11 @@ public:
     }
     
     static SocketException hostCannotResolve;
-    static SocketException connectListenerCreateError;
     static SocketException connectError;
-    static SocketException socks5UnsupportStateError;
-    static SocketException socksFdInitError;
-    static SocketException socksBindError;
-    static SocketException socksListenError;
-    static SocketException eventInitError;
-    static SocketException eventAddError;
+
+    static SocketException socketFdInitError;
+    static SocketException socketBindError;
+    static SocketException socketListenError;
 };
 
 

@@ -6,30 +6,44 @@ project(socket_kit_tests)
 if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WINSOCK_DEPRECATED_NO_WARNINGS")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DDEBUG")
 endif()
 
 if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WINSOCK_DEPRECATED_NO_WARNINGS")
 else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DDEBUG")
 endif()
-
-if(NOT DEFINED SOCKETKIT_DIR)
-    message(
-        FATAL_ERROR
-        "Please use -DSOCKETKIT_DIR to specific libSocketKit install path"
-    )
-endif()
-
-message("SOCKETKIT_DIR is'${SOCKETKIT_DIR}'")
-
-include_directories(${SOCKETKIT_DIR}/include)
-link_directories(${SOCKETKIT_DIR}/lib)
-link_libraries(SocketKit)
-link_libraries(ws2_32)
 
 add_executable(
-    test_udp
-    test_udp.cpp
+    test_runloop
+    test_runloop.cpp
+)
+
+add_executable(
+    test_tcpsocket
+    test_tcpsocket.cpp
+    ../src/TCP/TCPSocket.cpp
+    ../src/TCP/TCPConnector.cpp
+    ../src/TCP/TCPAcceptor.cpp
+    ../src/SocketException.cpp
+    ../src/SocketKit.cpp
+)
+
+add_executable(
+    test_udpsocket
+    test_udpsocket.cpp
+    ../src/UDP/UDPSocket.cpp
+    ../src/SocketKit.cpp
+    ../src/SocketException.cpp
+)
+
+target_include_directories(
+    test_tcpsocket PUBLIC
+    ../include/libSocketKit
+)
+
+target_include_directories(
+        test_udpsocket PUBLIC
+        ../include/libSocketKit
 )
