@@ -37,5 +37,5 @@ install(
     DIRECTORY
 		../include/libSocketKit
     DESTINATION
-		include/
+		include
 )
