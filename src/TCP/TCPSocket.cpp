@@ -35,15 +35,14 @@ void TCPSocket::read(DataEventHandler handler) {
     });
 }
 
-void TCPSocket::write(uchar *buffer, int &size) {
-    getRunloop()->post([this, buffer, &size](){
+void TCPSocket::write(uchar *buffer, int size) {
+    getRunloop()->post([this, buffer, size](){
         _stateMachine.writeBegin();
 #if _WIN32
-        int writeLen = (int)::send(_socket, (char *)buffer, size, 0);
+        ::send(_socket, (char *)buffer, size, 0);
 #else
-        int writeLen = (int)::send(_socket, buffer, size, 0);
+        ::send(_socket, buffer, size, 0);
 #endif
-        size = writeLen;
         _stateMachine.writeEnd();
     });
 }

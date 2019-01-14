@@ -42,7 +42,7 @@ public:
 
     virtual ~ICommunicator() = default;
     virtual void read(DataEventHandler handler) = 0;
-    virtual void write(uchar *buffer, int &size) = 0;
+    virtual void write(uchar *buffer, int size) = 0;
     virtual void closeWrite() = 0;
 
     virtual const CommunicatorStateMachine& stateMachine() const = 0;

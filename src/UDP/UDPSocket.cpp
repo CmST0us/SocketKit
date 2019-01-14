@@ -37,16 +37,15 @@ void UDPSocket::read(DataEventHandler handler) {
     });
 }
 
-void UDPSocket::write(uchar *buffer, int &size) {
-    getRunloop()->post([this, buffer, &size]() {
+void UDPSocket::write(uchar *buffer, int size) {
+    getRunloop()->post([this, buffer, size]() {
         _stateMachine.writeBegin();
         sockaddr_in sockaddrIn = _endpoint->getEndpointSockaddrIn();
 #if _WIN32
-        ssize_t sendLen = ::sendto(_socket, (char *)buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+        ::sendto(_socket, (char *)buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #else
-        ssize_t sendLen = ::sendto(_socket, buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+        ::sendto(_socket, buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #endif
-        size = sendLen;
         _stateMachine.writeEnd();
     });
 }
