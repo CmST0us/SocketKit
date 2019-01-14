@@ -37,8 +37,8 @@ void TCPAcceptor::bind(std::shared_ptr<Endpoint> endpoint) {
 }
 
 void TCPAcceptor::listen(int backlog) {
-    _stateMachine.connectBegin();
     getRunloop()->post([this, backlog] {
+        _stateMachine.connectBegin();
         int ret = ::listen(_acceptorSocket, backlog);
         if (ret < 0) {
             _stateMachine.errored();

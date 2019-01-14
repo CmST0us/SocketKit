@@ -107,13 +107,13 @@ public:
 int main(int argc, char* argv[]) {
     MyAcceptorClass *c = new MyAcceptorClass();
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+//    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    MyClass *t = new MyClass();
+//    MyClass *t = new MyClass();
 
     std::this_thread::sleep_for(std::chrono::seconds(100000));
     delete c;
-    delete t;
+//    delete t;
 
     return 0;
 }

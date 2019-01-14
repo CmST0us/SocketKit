@@ -30,7 +30,20 @@ add_executable(
     ../src/SocketKit.cpp
 )
 
+add_executable(
+    test_udpsocket
+    test_udpsocket.cpp
+    ../src/UDP/UDPSocket.cpp
+    ../src/SocketKit.cpp
+    ../src/SocketException.cpp
+)
+
 target_include_directories(
     test_tcpsocket PUBLIC
     ../include/libSocketKit
+)
+
+target_include_directories(
+        test_udpsocket PUBLIC
+        ../include/libSocketKit
 )

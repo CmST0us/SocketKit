@@ -68,8 +68,6 @@ void TCPSocket::connect(std::shared_ptr<Endpoint> endpoint) {
     _connector = std::unique_ptr<TCPConnector>(new TCPConnector());
     _endpoint = endpoint;
     TCPConnector *connector = _connector.get();
-    connector->getRunloop()->run();
-
     connector->mEventHandler = [this](TCPConnector *connector, TCPConnectorEvent event, SocketFd socket) {
         switch (event) {
             case TCPConnectorEvent::Connected :
@@ -88,6 +86,8 @@ void TCPSocket::connect(std::shared_ptr<Endpoint> endpoint) {
     };
 
     _stateMachine.connectBegin();
+    connector->getRunloop()->run();
+
     connector->connect(endpoint);
 }
 
