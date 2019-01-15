@@ -64,7 +64,7 @@ void TCPAcceptor::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while (!runloop->isCanceled()) {
             if (_stateMachine.state() != CommunicatorState::Established) {
-                runloop->dispatch();
+                runloop->dispatch(true);
                 continue;
             }
             fd_set reads;

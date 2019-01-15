@@ -20,7 +20,7 @@ void TCPConnector::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while (!runloop->isCanceled()) {
             if (_stateMachine.state() != CommunicatorState::Establishing) {
-                runloop->dispatch();
+                runloop->dispatch(true);
                 continue;
             }
 
