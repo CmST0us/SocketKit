@@ -15,8 +15,7 @@ TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _socket{so
 }
 
 TCPSocket::~TCPSocket() {
-    getRunloop()->stop();
-    closeSocket();
+    
 }
 
 utils::Runloop* TCPSocket::getRunloop() {
@@ -192,6 +191,8 @@ void TCPSocket::setupRunloop() {
 
             runloop->dispatch();
         }
+        
+        closeSocket();
     };
 
     _runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop(workRunloop));

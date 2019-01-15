@@ -9,13 +9,16 @@ using namespace socketkit;
 
 UDPSocket::UDPSocket(short localPort) : _stateMachine{CommunicatorType::Remote},
                                         _localPort{localPort} {
-    initSocket();
+    try {
+        initSocket();
+    } catch (SocketException e) {
+        throw e;
+    }
     setupRunloop();
 }
 
 UDPSocket::~UDPSocket() {
-    getRunloop()->stop();
-    closeSocket();
+    
 }
 
 void UDPSocket::read(DataEventHandler handler) {
@@ -130,6 +133,8 @@ void UDPSocket::setupRunloop() {
 
             runloop->dispatch();
         }
+        
+        closeSocket();
     };
 
     _runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop(workRunloop));
@@ -147,7 +152,27 @@ void UDPSocket::initSocket() {
     }
 
     utils::makeSocketNonblock(_socket);
-
+    int option = true;
+    socklen_t optionLen = sizeof(option);
+    
+    struct linger l;
+    l.l_linger = 0;
+    l.l_onoff = 1;
+    int intval = 1;
+    
+#if _WIN32
+    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&option, optionLen);
+    ::setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char *)&l, sizeof(struct linger));
+    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&intval, sizeof(int));
+    ::setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (char *)&intval, sizeof(int));
+#else
+    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optionLen);
+    ::setsockopt(_socket, SOL_SOCKET, SO_LINGER, &l, sizeof(struct linger));
+    ::setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &intval, sizeof(int));
+    ::setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, &intval, sizeof(int));
+    ::setsockopt(_socket, SOL_SOCKET, SO_NOSIGPIPE, &intval, sizeof(int));
+#endif
+    
     struct sockaddr_in bindAddr = {0};
     bindAddr.sin_family = AF_INET;
     bindAddr.sin_port = htons(_localPort);

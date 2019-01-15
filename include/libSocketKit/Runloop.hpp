@@ -37,9 +37,6 @@ public:
 
     void stop() {
         _canceled = true;
-#if DEBUG
-        std::cout<<"Runloop thread "<<_runloopThread.get_id()<<"will exit"<<std::endl;
-#endif
     }
 
     void run() {

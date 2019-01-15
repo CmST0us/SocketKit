@@ -9,13 +9,16 @@
 using namespace socketkit;
 
 TCPAcceptor::TCPAcceptor() : _stateMachine{CommunicatorType::Local} {
-    initSocket();
+    try {
+        initSocket();
+    } catch (SocketException e) {
+        throw e;
+    }
     setupRunloop();
 };
 
 TCPAcceptor::~TCPAcceptor() {
-    getRunloop()->stop();
-    closeSocket();
+    
 }
 
 utils::Runloop * TCPAcceptor::getRunloop() {
@@ -92,6 +95,7 @@ void TCPAcceptor::setupRunloop() {
 
             runloop->dispatch();
         }
+        closeSocket();
     };
 
     _runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop(workRunloop));
