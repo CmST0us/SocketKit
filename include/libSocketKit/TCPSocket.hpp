@@ -22,7 +22,6 @@ public:
     virtual void closeWrite() override;
     virtual const CommunicatorStateMachine& stateMachine() const override;
     virtual DataType communicatorDataType() const override;
-    void closeSocket();
     const SocketFd getSocketFd() const;
 
     // Remote
@@ -49,6 +48,7 @@ private:
     std::unique_ptr<utils::Runloop> _runloop;
 
     void setupRunloop();
+    void closeSocket();
 };
 
 };
