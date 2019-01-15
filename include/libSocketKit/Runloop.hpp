@@ -6,6 +6,8 @@
 
 #include <queue>
 #include <thread>
+#include <condition_variable>
+
 #include "NoCopyable.hpp"
 
 namespace socketkit {
@@ -60,14 +62,25 @@ public:
     void post(RunloopTaskHandler task) {
         _taskQueuePushLock.lock();
         _taskQueue.push(task);
+        _notEmpty.notify_all();
         _taskQueuePushLock.unlock();
     }
 
-    void dispatch() {
-        while (!_taskQueue.empty()) {
-            RunloopTaskHandler task = _taskQueue.front();
-            task();
-            _taskQueue.pop();
+    void dispatch(bool wait = false) {
+        if (_taskQueue.empty()) {
+            // 等待数据
+            if (wait) {
+                std::unique_lock<std::mutex> locker(_taskQueuePushLock);
+                _notEmpty.wait(locker, [this](){
+                    return !_taskQueue.empty();
+                });
+            }
+        } else {
+            while (!_taskQueue.empty()) {
+                RunloopTaskHandler task = _taskQueue.front();
+                task();
+                _taskQueue.pop();
+            }
         }
     }
 
@@ -85,6 +98,7 @@ private:
     std::queue<RunloopTaskHandler> _taskQueue;
 
     std::mutex _taskQueuePushLock;
+    std::condition_variable _notEmpty;
     volatile AtomBool _canceled{false};
     AtomBool _running{false};
 

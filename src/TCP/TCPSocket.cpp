@@ -125,7 +125,7 @@ void TCPSocket::setupRunloop() {
                 if (_stateMachine.state() == CommunicatorState::Closed) {
                     runloop->stop();
                 }
-                runloop->dispatch();
+                runloop->dispatch(true);
                 continue;
             }
 
