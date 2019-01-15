@@ -17,7 +17,7 @@ public:
 
     virtual utils::Runloop *getRunloop() override;
     virtual void read(DataEventHandler handler) override;
-    virtual void write(uchar *buffer, int size) override;
+    virtual void write(std::shared_ptr<utils::Data> data) override;
     virtual void closeWrite() override;
     virtual const CommunicatorStateMachine& stateMachine() const override;
     virtual DataType communicatorDataType() const override;
