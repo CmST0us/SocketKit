@@ -15,7 +15,7 @@
 namespace socketkit {
 
 enum class TCPAcceptorEvent {
-    Accepted,
+    CanAccept,
 
     Error
 };
