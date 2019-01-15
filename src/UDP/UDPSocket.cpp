@@ -35,7 +35,7 @@ void UDPSocket::read(DataEventHandler handler) {
 #else
         ssize_t recvLen = ::recvfrom(_socket, buf, 1500, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
 #endif
-        size = recvLen;
+        size = (int)recvLen;
         if (size > 0) {
             data->copy(buf, size);
             _stateMachine.readEnd();

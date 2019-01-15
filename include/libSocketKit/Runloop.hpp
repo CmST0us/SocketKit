@@ -6,6 +6,7 @@
 
 #include <queue>
 #include <thread>
+#include <future>
 #include <condition_variable>
 
 #include "NoCopyable.hpp"
@@ -44,12 +45,13 @@ public:
 
         _canceled = false;
 
-        _runloopThread = std::thread([this](){
+        _runloopThreadResult = std::async(std::launch::async, [this]() {
             _running = true;
             _runloopHandler(this);
             _running = false;
+            return true;
         });
-        _runloopThread.detach();
+
     }
 
     void post(RunloopTaskHandler task) {
@@ -85,9 +87,10 @@ private:
         while(!r->isCanceled()) {
             r->dispatch(true);
         }
+        return true;
     }};
 
-    std::thread _runloopThread;
+    std::future<bool> _runloopThreadResult;
     std::queue<RunloopTaskHandler> _taskQueue;
 
     std::mutex _taskQueuePushLock;
