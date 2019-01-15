@@ -40,7 +40,7 @@ public:
         };
 
         auto e = [ae] (socketkit::TCPAcceptor *a, socketkit::TCPAcceptorEvent event) {
-            if (event == socketkit::TCPAcceptorEvent::Accepted) {
+            if (event == socketkit::TCPAcceptorEvent::CanAccept) {
                 printf("accept");
                 a->accept(ae);
             }

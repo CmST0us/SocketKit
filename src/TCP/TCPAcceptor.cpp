@@ -85,7 +85,7 @@ void TCPAcceptor::setupRunloop() {
             } else {
                 if (FD_ISSET(_acceptorSocket, &reads)) {
                     // accept
-                    mEventHandler(this, TCPAcceptorEvent::Accepted);
+                    mEventHandler(this, TCPAcceptorEvent::CanAccept);
                 }
             }
 
