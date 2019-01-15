@@ -14,6 +14,11 @@ TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _socket{so
     setupRunloop();
 }
 
+TCPSocket::~TCPSocket() {
+    getRunloop()->stop();
+    closeSocket();
+}
+
 utils::Runloop* TCPSocket::getRunloop() {
     utils::Runloop *runloop = _runloop.get();
     return runloop;

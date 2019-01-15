@@ -14,7 +14,8 @@ UDPSocket::UDPSocket(short localPort) : _stateMachine{CommunicatorType::Remote},
 }
 
 UDPSocket::~UDPSocket() {
-
+    getRunloop()->stop();
+    closeSocket();
 }
 
 void UDPSocket::read(DataEventHandler handler) {

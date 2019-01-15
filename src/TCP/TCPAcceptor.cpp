@@ -14,7 +14,8 @@ TCPAcceptor::TCPAcceptor() : _stateMachine{CommunicatorType::Local} {
 };
 
 TCPAcceptor::~TCPAcceptor() {
-    printf("release");
+    getRunloop()->stop();
+    closeSocket();
 }
 
 utils::Runloop * TCPAcceptor::getRunloop() {

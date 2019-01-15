@@ -36,6 +36,8 @@ public:
     virtual void open() override;
     virtual void continueFinished() override;
 
+    virtual ~TCPSocket();
+
 public:
     CommunicatorEventHandler mEventHandler;
 private:
