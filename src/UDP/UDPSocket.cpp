@@ -99,6 +99,9 @@ void UDPSocket::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while (!runloop->isCanceled()) {
             if (_stateMachine.state() != CommunicatorState::Established) {
+                if (_stateMachine.state() == CommunicatorState::Closed) {
+                    runloop->stop();
+                }
                 runloop->dispatch();
                 continue;
             }

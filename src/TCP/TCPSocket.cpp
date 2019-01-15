@@ -122,6 +122,9 @@ void TCPSocket::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while(!runloop->isCanceled()) {
             if (_stateMachine.state() != CommunicatorState::Established) {
+                if (_stateMachine.state() == CommunicatorState::Closed) {
+                    runloop->stop();
+                }
                 runloop->dispatch();
                 continue;
             }
@@ -130,17 +133,17 @@ void TCPSocket::setupRunloop() {
             fd_set writeSet;
             fd_set errorSet;
             FD_ZERO(&readSet);
-            FD_ZERO(&writeSet);
+//            FD_ZERO(&writeSet);
             FD_ZERO(&errorSet);
             FD_SET(_socket, &readSet);
-            FD_SET(_socket, &writeSet);
+//            FD_SET(_socket, &writeSet);
             FD_SET(_socket, &errorSet);
 
             struct timeval tv;
             tv.tv_sec = 1;
             tv.tv_usec = 0;
 
-            int ret = ::select(_socket + 1, &readSet, &writeSet, &errorSet, &tv);
+            int ret = ::select(_socket + 1, &readSet, NULL, &errorSet, &tv);
             if (ret > 0) {
                 // socket have event
                 if (FD_ISSET(_socket, &readSet)) {
