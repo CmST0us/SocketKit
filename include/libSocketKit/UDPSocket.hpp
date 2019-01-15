@@ -26,6 +26,8 @@ public:
     virtual const Endpoint *connectingEndpoint() const override;
 
     short localPort() const;
+    const SocketFd getSocketFd() const;
+
     CommunicatorEventHandler mEventHandler;
 
 private:

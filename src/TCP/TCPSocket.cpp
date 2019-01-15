@@ -101,6 +101,10 @@ const Endpoint* TCPSocket::connectingEndpoint() const {
     return _endpoint.get();
 }
 
+const SocketFd TCPSocket::getSocketFd() const {
+    return _socket;
+}
+
 void TCPSocket::open() {
     getRunloop()->post([this]() {
         _stateMachine.connectBegin();

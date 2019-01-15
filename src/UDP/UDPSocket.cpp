@@ -83,6 +83,10 @@ const Endpoint* UDPSocket::connectingEndpoint() const {
     return _endpoint.get();
 }
 
+const SocketFd UDPSocket::getSocketFd() const {
+    return _socket;
+}
+
 short UDPSocket::localPort() const {
     return _localPort;
 }

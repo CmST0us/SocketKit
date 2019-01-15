@@ -23,6 +23,7 @@ public:
     virtual const CommunicatorStateMachine& stateMachine() const override;
     virtual DataType communicatorDataType() const override;
     void closeSocket();
+    const SocketFd getSocketFd() const;
 
     // Remote
     TCPSocket();
