@@ -39,12 +39,12 @@ enum class DataType {
 // [TODO] 写函数需要异步传递数据，需要一个std::shared_ptr<utils::Buffer>
 class ICommunicator: public utils::IAsync {
 public:
-    using DataEventHandler = std::function<void(std::unique_ptr<utils::Data> data)>;
+    using DataEventHandler = std::function<void(std::shared_ptr<utils::Data> data)>;
     using CommunicatorEventHandler = std::function<void(ICommunicator *, CommunicatorEvent event)>;
 
     virtual ~ICommunicator() = default;
     virtual void read(DataEventHandler handler) = 0;
-    virtual void write(std::unique_ptr<utils::Data> data) = 0;
+    virtual void write(std::shared_ptr<utils::Data> data) = 0;
     virtual void closeWrite() = 0;
 
     virtual const CommunicatorStateMachine& stateMachine() const = 0;

@@ -21,7 +21,7 @@ void UDPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler]() {
         uchar buf[1500] = {0};
         int size = 1500;
-        auto data = std::unique_ptr<utils::Data>(new utils::Data(size));
+        auto data = std::make_shared<utils::Data>(size);
         struct sockaddr_in recvSocketAddrIn;
         socklen_t addrInLen = sizeof(recvSocketAddrIn);
 
@@ -35,7 +35,7 @@ void UDPSocket::read(DataEventHandler handler) {
         if (size > 0) {
             data->copy(buf, size);
             _stateMachine.readEnd();
-            handler(std::move(data));
+            handler(data);
         } else {
             _stateMachine.errored();
             mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
@@ -43,8 +43,8 @@ void UDPSocket::read(DataEventHandler handler) {
     });
 }
 
-void UDPSocket::write(std::unique_ptr<utils::Data> data) {
-    getRunloop()->post([this, &data]() {
+void UDPSocket::write(std::shared_ptr<utils::Data> data) {
+    getRunloop()->post([this, data]() {
         _stateMachine.writeBegin();
         sockaddr_in sockaddrIn = _endpoint->getEndpointSockaddrIn();
 #if _WIN32
