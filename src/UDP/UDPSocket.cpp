@@ -32,10 +32,14 @@ void UDPSocket::read(DataEventHandler handler) {
         ssize_t recvLen = ::recvfrom(_socket, buf, 1500, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
 #endif
         size = recvLen;
-        data->copy(buf, size);
-
-        _stateMachine.readEnd();
-        handler(std::move(data));
+        if (size > 0) {
+            data->copy(buf, size);
+            _stateMachine.readEnd();
+            handler(std::move(data));
+        } else {
+            _stateMachine.errored();
+            mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+        }
     });
 }
 

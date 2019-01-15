@@ -31,10 +31,14 @@ void TCPSocket::read(DataEventHandler handler) {
         int readLen = (int)::recv(_socket, buffer, size, 0);
 #endif
         size = readLen;
-        data->copy(buffer, size);
-
-        _stateMachine.readEnd();
-        handler(std::move(data));
+        if (readLen > 0) {
+            data->copy(buffer, size);
+            _stateMachine.readEnd();
+            handler(std::move(data));
+        } else {
+            _stateMachine.errored();
+            mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+        }
     });
 }
 
