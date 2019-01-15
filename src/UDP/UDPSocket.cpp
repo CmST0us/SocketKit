@@ -21,7 +21,7 @@ void UDPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler]() {
         uchar buf[1500] = {0};
         int size = 1500;
-
+        auto data = std::unique_ptr<utils::Data>(new utils::Data(size));
         struct sockaddr_in recvSocketAddrIn;
         socklen_t addrInLen = sizeof(recvSocketAddrIn);
 
@@ -32,19 +32,21 @@ void UDPSocket::read(DataEventHandler handler) {
         ssize_t recvLen = ::recvfrom(_socket, buf, 1500, 0, (struct sockaddr*)&recvSocketAddrIn, &addrInLen);
 #endif
         size = recvLen;
+        data->copy(buf, size);
+
         _stateMachine.readEnd();
-        handler(buf, size);
+        handler(std::move(data));
     });
 }
 
-void UDPSocket::write(uchar *buffer, int size) {
-    getRunloop()->post([this, buffer, size]() {
+void UDPSocket::write(std::unique_ptr<utils::Data> data) {
+    getRunloop()->post([this, &data]() {
         _stateMachine.writeBegin();
         sockaddr_in sockaddrIn = _endpoint->getEndpointSockaddrIn();
 #if _WIN32
-        ::sendto(_socket, (char *)buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+        ::sendto(_socket, (char *)data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #else
-        ::sendto(_socket, buffer, size, 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+        ::sendto(_socket, data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #endif
         _stateMachine.writeEnd();
     });

@@ -23,6 +23,7 @@ void TCPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler](){
         uchar buffer[10240] = {0};
         int size = 10240;
+        auto data = std::unique_ptr<utils::Data>(new utils::Data(size));
         _stateMachine.readBegin();
 #if _WIN32
         int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
@@ -30,18 +31,20 @@ void TCPSocket::read(DataEventHandler handler) {
         int readLen = (int)::recv(_socket, buffer, size, 0);
 #endif
         size = readLen;
+        data->copy(buffer, size);
+
         _stateMachine.readEnd();
-        handler(buffer, size);
+        handler(std::move(data));
     });
 }
 
-void TCPSocket::write(uchar *buffer, int size) {
-    getRunloop()->post([this, buffer, size](){
+void TCPSocket::write(std::unique_ptr<utils::Data> data) {
+    getRunloop()->post([this, &data](){
         _stateMachine.writeBegin();
 #if _WIN32
-        ::send(_socket, (char *)buffer, size, 0);
+        ::send(_socket, (char *)data->getDataAddress, data->getDataSize(), 0);
 #else
-        ::send(_socket, buffer, size, 0);
+        ::send(_socket, data->getDataAddress(), data->getDataSize(), 0);
 #endif
         _stateMachine.writeEnd();
     });
