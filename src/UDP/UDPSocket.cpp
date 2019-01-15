@@ -7,8 +7,8 @@
 
 using namespace socketkit;
 
-UDPSocket::UDPSocket(short localPort) : _localPort{localPort},
-                                        _stateMachine{CommunicatorType::Remote} {
+UDPSocket::UDPSocket(short localPort) : _stateMachine{CommunicatorType::Remote},
+                                        _localPort{localPort} {
     initSocket();
     setupRunloop();
 }

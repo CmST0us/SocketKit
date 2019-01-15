@@ -9,8 +9,8 @@ TCPSocket::TCPSocket() : _stateMachine{CommunicatorType::Remote} {
 }
 
 TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _socket{socket},
-                                                                      _stateMachine{CommunicatorType::Local},
-                                                                      _endpoint{ep} {
+                                                                      _endpoint{ep},
+                                                                      _stateMachine{CommunicatorType::Local} {
     setupRunloop();
 }
 
