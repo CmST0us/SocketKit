@@ -28,7 +28,7 @@ public:
         return _size;
     }
 
-    bool copy(void *src, int size) {
+    bool copy(const void *src, int size) {
         if (size > _size) {
             return false;
         }
