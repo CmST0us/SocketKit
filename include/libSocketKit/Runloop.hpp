@@ -24,12 +24,7 @@ public:
     }
 
     ~Runloop() {
-        if (isRunning()) {
-            stop();
-            if (_runloopThread.joinable()) {
-                _runloopThread.join();
-            }
-        }
+        stop();
     }
 
     bool isRunning() const {
@@ -57,6 +52,7 @@ public:
             _runloopHandler(this);
             _running = false;
         });
+        _runloopThread.detach();
     }
 
     void post(RunloopTaskHandler task) {
@@ -90,7 +86,7 @@ private:
 
     RunloopHandler _runloopHandler{[](Runloop *r){
         while(!r->isCanceled()) {
-            r->dispatch();
+            r->dispatch(true);
         }
     }};
 
