@@ -3,22 +3,42 @@ cmake_minimum_required(VERSION 3.0)
 project(socket_kit_tests)
 
 # Set Compiler Flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-
-if(NOT DEFINED SOCKETKIT_DIR)
-    message(
-        FATAL_ERROR
-        "Please use -DSOCKETKIT_DIR to specific libSocketKit install path"
-    )
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WINSOCK_DEPRECATED_NO_WARNINGS")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DDEBUG")
 endif()
 
-message("SOCKETKIT_DIR is'${SOCKETKIT_DIR}'")
-
-include_directories(${SOCKETKIT_DIR}/include)
-link_libraries(${SOCKETKIT_DIR}/lib/libSocketKit.a)
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WINSOCK_DEPRECATED_NO_WARNINGS")
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DDEBUG")
+endif()
 
 add_executable(
-    test_udp
-    test_udp.cpp
+    test_tcpsocket
+    test_tcpsocket.cpp
+    ../src/TCP/TCPSocket.cpp
+    ../src/TCP/TCPConnector.cpp
+    ../src/TCP/TCPAcceptor.cpp
+    ../src/SocketException.cpp
+    ../src/SocketKit.cpp
+)
+
+add_executable(
+    test_udpsocket
+    test_udpsocket.cpp
+    ../src/UDP/UDPSocket.cpp
+    ../src/SocketKit.cpp
+    ../src/SocketException.cpp
+)
+
+target_include_directories(
+    test_tcpsocket PUBLIC
+    ../include/libSocketKit
+)
+
+target_include_directories(
+    test_udpsocket PUBLIC
+    ../include/libSocketKit
 )

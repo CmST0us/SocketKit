@@ -14,7 +14,7 @@ add_library(
 )
 
 target_include_directories(SocketKit PUBLIC
-    ../include
+    ../include/libSocketKit
 )
 
 target_include_directories(SocketKit PRIVATE
@@ -22,7 +22,6 @@ target_include_directories(SocketKit PRIVATE
     ./TCP
     ./UDP
 )
-
 
 # Install
 ## Install Target
@@ -35,14 +34,8 @@ install(
 
 ## Install Header
 install(
-    FILES
-    ../include/Communicator.hpp
-    ../include/SocketAddress.hpp
-    ../include/SocketException.hpp
-    ../include/TCPConnection.hpp
-    ../include/TCPServer.hpp
-    ../include/UDPConnection.hpp
-    ../include/UDPServer.hpp
+    DIRECTORY
+		../include/libSocketKit
     DESTINATION
-    include/libSocketKit
+		include
 )
