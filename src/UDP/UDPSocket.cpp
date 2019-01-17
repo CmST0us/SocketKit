@@ -25,7 +25,7 @@ void UDPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler]() {
         uchar buf[1500] = {0};
         int size = 1500;
-        auto data = std::make_shared<utils::Data>(size);
+
         struct sockaddr_in recvSocketAddrIn;
         socklen_t addrInLen = sizeof(recvSocketAddrIn);
 
@@ -37,6 +37,7 @@ void UDPSocket::read(DataEventHandler handler) {
 #endif
         size = (int)recvLen;
         if (size > 0) {
+            auto data = std::make_shared<utils::Data>(size);
             data->copy(buf, size);
             _stateMachine.readEnd();
             handler((ICommunicator *)(IRemoteCommunicator *)this, (data));
