@@ -50,7 +50,7 @@ void TCPSocket::write(std::shared_ptr<utils::Data> data) {
     getRunloop()->post([this, data](){
         _stateMachine.writeBegin();
 #if _WIN32
-        ::send(_socket, (char *)data->getDataAddress, data->getDataSize(), 0);
+        ::send(_socket, (const char *)data->getDataAddress(), (int)data->getDataSize(), 0);
 #else
         ::send(_socket, data->getDataAddress(), data->getDataSize(), 0);
 #endif
@@ -61,7 +61,7 @@ void TCPSocket::write(std::shared_ptr<utils::Data> data) {
 void TCPSocket::closeWrite() {
     getRunloop()->post([this]() {
         _stateMachine.writeCloseBegin();
-        shutdown(_socket, SHUT_WR);
+        shutdown(_socket, SHUT_WD);
         _stateMachine.writeCloseEnd();
     });
 }

@@ -40,7 +40,7 @@ public:
 public:
     CommunicatorEventHandler mEventHandler;
 private:
-    SocketFd _socket{-1};
+    SocketFd _socket{(SocketFd)-1};
     std::unique_ptr<TCPConnector> _connector{nullptr};
 
     std::shared_ptr<Endpoint> _endpoint;
