@@ -89,7 +89,6 @@ void TCPAcceptor::setupRunloop() {
             } else {
                 if (FD_ISSET(_acceptorSocket, &reads)) {
                     // accept
-                    int err = WSAGetLastError();
                     mEventHandler(this, TCPAcceptorEvent::CanAccept);
                 }
             }

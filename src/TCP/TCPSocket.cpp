@@ -1,5 +1,4 @@
 
-
 #include "TCPSocket.hpp"
 
 using namespace socketkit;
@@ -62,7 +61,7 @@ void TCPSocket::write(std::shared_ptr<utils::Data> data) {
 void TCPSocket::closeWrite() {
     getRunloop()->post([this]() {
         _stateMachine.writeCloseBegin();
-        shutdown(_socket, SHUT_WD);
+        ::shutdown(_socket, SHUT_WR);
         _stateMachine.writeCloseEnd();
     });
 }

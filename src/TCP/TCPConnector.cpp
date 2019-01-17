@@ -70,7 +70,6 @@ void TCPConnector::setupRunloop() {
                     isError = false;
                     break;
                 } else {
-                    int lasterror = WSAGetLastError();
                     isConnect = false;
                     isError = true;
                 }
