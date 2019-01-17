@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
 
     std::unique_ptr<UDPSocket> udp = std::unique_ptr<UDPSocket>(new UDPSocket(TEST_UDP_LOCAL_PORT));
     UDPSocket *pUdp = udp.get();
-    auto rh = [pUdp](std::shared_ptr<utils::Data> data) {
-        pUdp->write(data);
+    auto rh = [pUdp](ICommunicator *communicator, std::shared_ptr<utils::Data> data) {
+        communicator->write(data);
     };
 
     auto eh = [rh](ICommunicator *communicator, CommunicatorEvent event) {
