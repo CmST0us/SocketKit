@@ -79,7 +79,7 @@ void TCPAcceptor::setupRunloop() {
 
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
-            result = ::select((int)_acceptorSocket + 1, &reads, 0, 0, &timeout);
+            result = ::select((int)_acceptorSocket + 1, &reads, NULL, NULL, &timeout);
             if (result == -1) {
                 //server error
                 _stateMachine.errored();
@@ -89,6 +89,7 @@ void TCPAcceptor::setupRunloop() {
             } else {
                 if (FD_ISSET(_acceptorSocket, &reads)) {
                     // accept
+                    int err = WSAGetLastError();
                     mEventHandler(this, TCPAcceptorEvent::CanAccept);
                 }
             }

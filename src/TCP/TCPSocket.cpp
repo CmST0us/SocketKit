@@ -27,7 +27,7 @@ void TCPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler](){
         uchar buffer[10240] = {0};
         int size = 10240;
-        auto data = std::make_shared<utils::Data>(size);
+        
         _stateMachine.readBegin();
 #if _WIN32
         int readLen = (int)::recv(_socket, (char *)buffer, size, 0);
@@ -36,6 +36,7 @@ void TCPSocket::read(DataEventHandler handler) {
 #endif
         size = readLen;
         if (readLen > 0) {
+            auto data = std::make_shared<utils::Data>(size);
             data->copy(buffer, size);
             _stateMachine.readEnd();
             handler((ICommunicator *)(IRemoteCommunicator *)this, (data));

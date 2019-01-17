@@ -7,7 +7,7 @@
 
 using namespace socketkit;
 
-UDPSocket::UDPSocket(short localPort) : _stateMachine{CommunicatorType::Remote},
+UDPSocket::UDPSocket(unsigned short localPort) : _stateMachine{CommunicatorType::Remote},
                                         _localPort{localPort} {
     try {
         initSocket();
@@ -25,7 +25,7 @@ void UDPSocket::read(DataEventHandler handler) {
     getRunloop()->post([this, handler]() {
         uchar buf[1500] = {0};
         int size = 1500;
-        auto data = std::make_shared<utils::Data>(size);
+
         struct sockaddr_in recvSocketAddrIn;
         socklen_t addrInLen = sizeof(recvSocketAddrIn);
 
@@ -37,6 +37,7 @@ void UDPSocket::read(DataEventHandler handler) {
 #endif
         size = (int)recvLen;
         if (size > 0) {
+            auto data = std::make_shared<utils::Data>(size);
             data->copy(buf, size);
             _stateMachine.readEnd();
             handler((ICommunicator *)(IRemoteCommunicator *)this, (data));
@@ -91,7 +92,9 @@ const SocketFd UDPSocket::getSocketFd() const {
     return _socket;
 }
 
-short UDPSocket::localPort() const {
+
+
+unsigned short UDPSocket::localPort() const {
     return _localPort;
 }
 

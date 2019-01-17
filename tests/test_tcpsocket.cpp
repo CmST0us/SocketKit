@@ -7,113 +7,85 @@
 #include "TCPSocket.hpp"
 #include "TCPAcceptor.hpp"
 
-class MyAcceptorClass final : socketkit::utils::NoCopyable {
-private:
-    std::shared_ptr<socketkit::TCPAcceptor> _acceptor;
-    std::shared_ptr<socketkit::TCPSocket> _socket;
-public:
-    MyAcceptorClass() {
-        _acceptor = std::make_shared<socketkit::TCPAcceptor>();
-        auto rh = [this](uchar *b, int s) {
-            if (s > 0) {
-                int ss = s;
-                _socket->write(b, ss);
-            }
-        };
+#define TEST_TCP_LOCAL_PORT 12003
+#define TEST_TCP_REMOTE_PORT 12004
 
-        auto eh = [this, rh](socketkit::ICommunicator *c, socketkit::CommunicatorEvent e) {
-            if (e == socketkit::CommunicatorEvent::HasBytesAvailable) {
-                c->read(rh);
-            }
-        };
-
-        auto ae = [this, eh](socketkit::TCPAcceptor *a, std::shared_ptr<socketkit::TCPSocket> s) {
-            _socket = s;
-            _socket->getRunloop()->run();
-            _socket->mEventHandler = eh;
-            _socket->open();
-            _socket->continueFinished();
-
-            std::string str = "hello";
-            int l = str.length();
-            _socket->write((uchar *)str.c_str(), l);
-        };
-
-        auto e = [ae] (socketkit::TCPAcceptor *a, socketkit::TCPAcceptorEvent event) {
-            if (event == socketkit::TCPAcceptorEvent::CanAccept) {
-                printf("accept");
-                a->accept(ae);
-            }
-        };
-
-        _acceptor->mEventHandler = e;
-        _acceptor->getRunloop()->run();
-
-        auto endpoint = std::make_shared<socketkit::Endpoint>("127.0.0.1", 12002);
-        _acceptor->bind(endpoint);
-        _acceptor->listen(5);
-    }
-};
-
-
-class MyClass final : socketkit::utils::NoCopyable {
-private:
-    std::shared_ptr<socketkit::TCPSocket> _connection;
-    uchar buffer[4096] = {0};
-public:
-    void eventCallback(socketkit::ICommunicator *communicator, socketkit::CommunicatorEvent event) {
-        switch (event) {
-            case socketkit::CommunicatorEvent::HasBytesAvailable : {
-                printf("can read\n");
-                int s = 4096;
-                _connection->read([this](uchar *data, int size){
-                    if (size > 0) {
-                        _connection->write(data, size);
-                    }
-                });
-
-                break;
-            }
-            case socketkit::CommunicatorEvent::EndEncountered : {
-                printf("eof\n");
-                break;
-            }
-            case socketkit::CommunicatorEvent::OpenCompleted : {
-                printf("connect\n");
-                break;
-            }
-            case socketkit::CommunicatorEvent::ErrorOccurred : {
-                printf("error\n");
-                break;
-            }
-            default:
-
-                break;
-        }
-    }
-
-    MyClass() {
-        _connection= std::make_shared<socketkit::TCPSocket>();
-        auto endpoint = std::make_shared<socketkit::Endpoint>("127.0.0.1", 12002);
-        auto callback = std::bind(&MyClass::eventCallback, this, std::placeholders::_1, std::placeholders::_2);
-        _connection->mEventHandler = callback;
-        _connection->getRunloop()->run();
-        _connection->connect(endpoint);
-    }
-
-};
-
-
+using namespace socketkit;
 int main(int argc, char* argv[]) {
-    MyAcceptorClass *c = new MyAcceptorClass();
+    initialize();
+    std::unique_ptr<utils::Runloop> runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop());
+    utils::Runloop *runloopPtr = runloop.get();
+    runloop->run();
 
-//    std::this_thread::sleep_for(std::chrono::seconds(1));
+    // Connect Target
+    std::shared_ptr<TCPSocket> tcp = std::make_shared<TCPSocket>();
 
-//    MyClass *t = new MyClass();
+    auto rh = [](ICommunicator *communicator, std::shared_ptr<utils::Data> data) {
+        communicator->write(data);
+    };
 
-    std::this_thread::sleep_for(std::chrono::seconds(100000));
-    delete c;
-//    delete t;
+    auto eh = [rh, runloopPtr, &tcp](ICommunicator *communicator, CommunicatorEvent event) {
+        if (event == CommunicatorEvent::OpenCompleted) {
+            char str[] = "TCPSocket Test Echo Server";
+            std::shared_ptr<utils::Data> strData = std::make_shared<utils::Data>(strlen(str));
+            strData->copy((const void *)str, strData->getDataSize());
 
+            communicator->write(strData);
+        } else if (event == CommunicatorEvent::HasBytesAvailable) {
+            communicator->read(rh);
+        } else if (event == CommunicatorEvent::EndEncountered) {
+            communicator->getRunloop()->post([communicator]() {
+                communicator->closeWrite();
+            });
+        } else {
+            // 参考错误释放处理方法
+            communicator->getRunloop()->stop();
+            tcp.reset();
+            //runloopPtr->post([&tcp]() {
+            //    tcp.reset();
+            //});
+        }
+    };
+
+    tcp->mEventHandler = eh;
+     tcp->getRunloop()->run();
+    
+    std::shared_ptr<Endpoint> ep = std::make_shared<Endpoint>("127.0.0.1", TEST_TCP_REMOTE_PORT);
+    tcp->connect(ep);
+
+    // Local Server
+    std::shared_ptr<TCPSocket> clientSocket;
+    std::shared_ptr<TCPAcceptor> acceptor = std::make_shared<TCPAcceptor>();
+
+    auto ap = [&clientSocket, eh](TCPAcceptor *acceptor, std::shared_ptr<TCPSocket> client) {
+        client->getRunloop()->run();
+
+        client->open();
+        client->continueFinished();
+        client->mEventHandler = eh;
+
+        char str[] = "TCPSocket Test Echo Server";
+        std::shared_ptr<utils::Data> strData = std::make_shared<utils::Data>(strlen(str));
+        strData->copy((const void *)str, strData->getDataSize());
+
+        client->write(strData);
+
+        clientSocket = client;
+    };
+
+    auto aep = [ap](TCPAcceptor *acceptor, TCPAcceptorEvent event) {
+        if (event == TCPAcceptorEvent::CanAccept) {
+            acceptor->accept(ap);
+        }
+    };
+    acceptor->mEventHandler = aep;
+    acceptor->getRunloop()->run();
+
+    std::shared_ptr<Endpoint> listenEp = std::make_shared<Endpoint>("127.0.0.1", TEST_TCP_LOCAL_PORT);
+    acceptor->bind(listenEp);
+    acceptor->listen(5);
+    acceptor->mEventHandler = aep;
+
+    std::this_thread::sleep_for(std::chrono::seconds(100));
     return 0;
 }

@@ -17,7 +17,7 @@ class Endpoint final : public utils::NoCopyable {
 
 public:
 
-    Endpoint(std::string domain, short port) : _endpointDomain{domain},
+    Endpoint(std::string domain, unsigned short port) : _endpointDomain{domain},
                                                _endpointPort{port} {
         try {
             std::string ip = Endpoint::getIpByDomain(_endpointDomain);
@@ -37,7 +37,7 @@ public:
         return _endpointDomain;
     };
 
-    short getEndpointPort() const {
+    unsigned short getEndpointPort() const {
         return _endpointPort;
     };
 
@@ -53,7 +53,7 @@ public:
     static std::shared_ptr<Endpoint> create(struct sockaddr_in addr_in) {
         if (addr_in.sin_family == AF_INET) {
             try {
-                short port = ntohs(addr_in.sin_port);
+                unsigned short port = ntohs(addr_in.sin_port);
                 char *ipAddrStr = inet_ntoa(addr_in.sin_addr);
                 std::string ipString = std::string(ipAddrStr, strlen(ipAddrStr));
 
@@ -83,7 +83,7 @@ public:
 private:
     std::string _endpointIp{"127.0.0.1"};
     std::string _endpointDomain{"localhost"};
-    short  _endpointPort{0};
+    unsigned short  _endpointPort{0};
 };
 
 
