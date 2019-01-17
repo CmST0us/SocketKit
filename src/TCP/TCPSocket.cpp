@@ -38,7 +38,7 @@ void TCPSocket::read(DataEventHandler handler) {
         if (readLen > 0) {
             data->copy(buffer, size);
             _stateMachine.readEnd();
-            handler(data);
+            handler((ICommunicator *)(IRemoteCommunicator *)this, (data));
         } else {
             _stateMachine.errored();
             mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
