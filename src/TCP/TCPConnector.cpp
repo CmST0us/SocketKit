@@ -31,7 +31,11 @@ void TCPConnector::setupRunloop() {
             for (int retryTimes = 0; retryTimes < mRetryTimes; retryTimes++) {
                 initSocket();
                 int ret = ::connect(_socket, (const sockaddr *)&addr, sizeof(addr));
+#if _WIN32
+                if (ret < 0 && WSAGetLastError() == WSAEWOULDBLOCK) {
+#else
                 if (ret < 0 && errno == EINPROGRESS) {
+#endif
                     fd_set writeSet;
                     fd_set readSet;
                     FD_ZERO(&writeSet);
@@ -66,6 +70,7 @@ void TCPConnector::setupRunloop() {
                     isError = false;
                     break;
                 } else {
+                    int lasterror = WSAGetLastError();
                     isConnect = false;
                     isError = true;
                 }

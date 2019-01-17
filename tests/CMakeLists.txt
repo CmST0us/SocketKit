@@ -47,3 +47,8 @@ target_link_libraries(
 	test_udpsocket PRIVATE
 	ws2_32
 )
+
+target_link_libraries(
+	test_tcpsocket PRIVATE
+	ws2_32
+)

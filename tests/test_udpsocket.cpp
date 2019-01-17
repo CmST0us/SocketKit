@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     udp->connect(ep);
     
     std::shared_ptr<utils::Data> helloData = std::make_shared<utils::Data>(5);
-    char str[] = "hello";
+    char str[] = "UDPSocket Test Echo Server";
     helloData->copy((const void *)str, 5);
 
     udp->write(helloData);
