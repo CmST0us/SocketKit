@@ -39,7 +39,7 @@ void UDPSocket::read(DataEventHandler handler) {
         if (size > 0) {
             data->copy(buf, size);
             _stateMachine.readEnd();
-            handler(data);
+            handler((ICommunicator *)(IRemoteCommunicator *)this, (data));
         } else {
             _stateMachine.errored();
             mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
