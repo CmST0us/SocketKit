@@ -30,9 +30,10 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<Endpoint> ep = std::make_shared<Endpoint>("localhost", 12002);
     udp->connect(ep);
     
-    std::shared_ptr<utils::Data> helloData = std::make_shared<utils::Data>(1500);
+    std::shared_ptr<utils::Data> helloData = std::make_shared<utils::Data>(5);
     char str[] = "hello";
     helloData->copy((const void *)str, 5);
+
     udp->write(helloData);
 
     std::this_thread::sleep_for(std::chrono::seconds(100));
