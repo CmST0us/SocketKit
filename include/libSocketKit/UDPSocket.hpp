@@ -12,7 +12,7 @@ namespace socketkit {
 class UDPSocket final : public IRemoteCommunicator {
 
 public:
-    UDPSocket(short localPort = 0);
+    UDPSocket(unsigned short localPort = 0);
     virtual ~UDPSocket();
 
     virtual utils::Runloop *getRunloop() override;
@@ -25,7 +25,7 @@ public:
     virtual void connect(std::shared_ptr<Endpoint> endpoint) override;
     virtual const Endpoint *connectingEndpoint() const override;
 
-    short localPort() const;
+    unsigned short localPort() const;
     const SocketFd getSocketFd() const;
 
     CommunicatorEventHandler mEventHandler;
@@ -35,7 +35,7 @@ private:
     std::unique_ptr<utils::Runloop> _runloop;
     CommunicatorStateMachine _stateMachine;
     std::shared_ptr<Endpoint> _endpoint;
-    short _localPort;
+    unsigned short _localPort;
 
     void setupRunloop();
     void initSocket();

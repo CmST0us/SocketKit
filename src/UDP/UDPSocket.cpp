@@ -7,7 +7,7 @@
 
 using namespace socketkit;
 
-UDPSocket::UDPSocket(short localPort) : _stateMachine{CommunicatorType::Remote},
+UDPSocket::UDPSocket(unsigned short localPort) : _stateMachine{CommunicatorType::Remote},
                                         _localPort{localPort} {
     try {
         initSocket();
@@ -92,7 +92,9 @@ const SocketFd UDPSocket::getSocketFd() const {
     return _socket;
 }
 
-short UDPSocket::localPort() const {
+
+
+unsigned short UDPSocket::localPort() const {
     return _localPort;
 }
 
