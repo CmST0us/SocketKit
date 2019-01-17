@@ -16,7 +16,7 @@ bool initialize() {
     return true;
 };
 
-bool relesase() {
+bool release() {
 #if _WIN32
     int ret = WSACleanup();
     if (ret != 0) {
