@@ -14,6 +14,8 @@ typedef SOCKET SocketFd;
 typedef int ssize_t;
 typedef int socklen_t;
 #define SHUT_RDWR SD_BOTH
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WD SD_SEND
 
 #else
 

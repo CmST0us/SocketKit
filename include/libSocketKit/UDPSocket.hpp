@@ -31,7 +31,7 @@ public:
     CommunicatorEventHandler mEventHandler;
 
 private:
-    SocketFd _socket{-1};
+    SocketFd _socket{(SocketFd)-1};
     std::unique_ptr<utils::Runloop> _runloop;
     CommunicatorStateMachine _stateMachine;
     std::shared_ptr<Endpoint> _endpoint;

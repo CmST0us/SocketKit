@@ -35,7 +35,7 @@ public:
     void accept(TCPAcceptSocketHandler);
 
 private:
-    SocketFd _acceptorSocket{-1};
+    SocketFd _acceptorSocket{(SocketFd)-1};
     CommunicatorStateMachine _stateMachine;
     std::shared_ptr<Endpoint> _endpoint{nullptr};
     std::unique_ptr<utils::Runloop> _runloop{nullptr};

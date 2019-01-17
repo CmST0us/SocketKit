@@ -42,3 +42,8 @@ target_include_directories(
     test_udpsocket PUBLIC
     ../include/libSocketKit
 )
+
+target_link_libraries(
+	test_udpsocket PRIVATE
+	ws2_32
+)
