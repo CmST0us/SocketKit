@@ -200,6 +200,7 @@ void TCPSocket::setupRunloop() {
 }
 
 void TCPSocket::closeSocket() {
+    utils::makeSocketBlock(_socket);
 #if _WIN32
         ::closesocket(_socket);
 #else

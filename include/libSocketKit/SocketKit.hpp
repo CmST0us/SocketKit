@@ -46,7 +46,7 @@ bool release();
 
 namespace utils {
 void makeSocketNonblock(SocketFd socket);
-
+void makeSocketBlock(SocketFd socket);
 };
 
 };

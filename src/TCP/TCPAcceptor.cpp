@@ -138,9 +138,10 @@ void TCPAcceptor::initSocket() {
 }
 
 void TCPAcceptor::closeSocket() {
+    utils::makeSocketBlock(_acceptorSocket);
 #if _WIN32
-        ::closesocket(_acceptorSocket);
+    ::closesocket(_acceptorSocket);
 #else
-        ::close(_acceptorSocket);
+    ::close(_acceptorSocket);
 #endif
 }

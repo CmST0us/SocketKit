@@ -38,6 +38,14 @@ void makeSocketNonblock(SocketFd socket) {
 #endif
 }
 
-};
+void makeSocketBlock(SocketFd socket) {
+    unsigned long ul = 0;
+#if _WIN32
+    ioctlsocket(socket, FIONBIO, &ul);
+#else
+    ioctl(socket, FIONBIO, &ul);
+#endif
+}
 
+};
 };

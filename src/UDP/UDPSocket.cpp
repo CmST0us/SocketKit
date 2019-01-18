@@ -189,6 +189,7 @@ void UDPSocket::initSocket() {
 }
 
 void UDPSocket::closeSocket() {
+    utils::makeSocketBlock(_socket);
 #if _WIN32
     ::closesocket(_socket);
 #else
