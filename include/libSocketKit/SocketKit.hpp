@@ -18,7 +18,7 @@ typedef int socklen_t;
 #define SHUT_WR SD_SEND
 
 #else
-
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -30,6 +30,10 @@ typedef int socklen_t;
 #include <sys/ioctl.h>
 
 typedef int SocketFd;
+#endif
+
+#ifdef MSG_NOSIGNAL
+#define SO_NOSIGPIPE MSG_NOSIGNAL
 #endif
 
 #ifdef DEBUG
