@@ -53,4 +53,15 @@ target_link_libraries(
 	test_tcpsocket PRIVATE
 	ws2_32
 )
+else ()
+target_link_libraries(
+	test_udpsocket PRIVATE
+	pthread
+)
+target_link_libraries(
+	test_tcpsocket PRIVATE
+	pthread
+)
 endif()
+
+
