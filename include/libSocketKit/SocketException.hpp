@@ -32,6 +32,8 @@ public:
     static SocketException socketFdInitError;
     static SocketException socketBindError;
     static SocketException socketListenError;
+
+    static SocketException usbmuxdFdCannotConnect;
 };
 
 

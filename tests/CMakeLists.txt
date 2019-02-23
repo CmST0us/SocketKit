@@ -33,6 +33,18 @@ add_executable(
     ../src/SocketException.cpp
 )
 
+if (WIN32)
+
+else()
+add_executable(
+	test_usbmuxd
+	test_usbmuxd.cpp
+	../src/usbmuxd/UsbmuxdConnector.cpp
+	../src/SocketKit.cpp
+	../src/SocketException.cpp
+)
+endif()
+
 target_include_directories(
     test_tcpsocket PUBLIC
     ../include/libSocketKit
@@ -41,6 +53,11 @@ target_include_directories(
 target_include_directories(
     test_udpsocket PUBLIC
     ../include/libSocketKit
+)
+
+target_include_directories(
+	test_usbmuxd PUBLIC
+	../include/libSocketKit
 )
 
 if (WIN32)
@@ -60,6 +77,10 @@ target_link_libraries(
 )
 target_link_libraries(
 	test_tcpsocket PRIVATE
+	pthread
+)
+target_link_libraries(
+	test_usbmuxd PRIVATE
 	pthread
 )
 endif()
