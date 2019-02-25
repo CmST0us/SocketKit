@@ -5,7 +5,8 @@
 
 using namespace socketkit;
 
-UsbmuxdConnector::UsbmuxdConnector() : _stateMachine{CommunicatorType::Remote} {
+UsbmuxdConnector::UsbmuxdConnector(UsbmuxdProtocol *protocol) : _stateMachine{CommunicatorType::Remote},
+                                                                _protocol{protocol} {
     initSocket();
     setupRunloop();
 }
@@ -22,9 +23,40 @@ utils::Runloop* UsbmuxdConnector::getRunloop() {
 void UsbmuxdConnector::setupRunloop() {
     auto workRunloop = [this](utils::Runloop *runloop) {
         while (!runloop->isCanceled()) {
-            if (_stateMachine.state() != CommunicatorState::Establishing) {
-                runloop->dispatch(true);
-                continue;
+            fd_set readSet;
+            fd_set errorSet;
+            FD_ZERO(&readSet);
+            FD_ZERO(&errorSet);
+            FD_SET(_socket, &readSet);
+            FD_SET(_socket, &errorSet);
+
+            struct timeval tv;
+            tv.tv_sec = 1;
+            tv.tv_usec = 0;
+
+            int ret = ::select(_socket + 1, &readSet, NULL, &errorSet, &tv);
+            if (ret > 0) {
+                // socket have event
+                if (FD_ISSET(_socket, &readSet)) {
+                    // read event
+                    if (_stateMachine.state() == CommunicatorState::Established) {
+                        runloop->stop();
+                    } else if (_stateMachine.state() == CommunicatorState::Establishing) {
+                        // Check Connect Result
+                    } else if (_stateMachine.state() == CommunicatorState::Init) {
+                        // Wait Device Record
+                    } else {
+                        // error
+                    }
+                } else if (FD_ISSET(_socket, &errorSet)) {
+                    // error event
+
+                } else {
+                    // no event
+
+                }
+            } else if (ret < 0) {
+                // error
             }
 
             runloop->dispatch();
@@ -76,7 +108,32 @@ void UsbmuxdConnector::closeSocket() {
 void UsbmuxdConnector::connect(std::shared_ptr<Endpoint> endpoint) {
     getRunloop()->post([this, endpoint]() {
         _stateMachine.connectBegin();
+        uint32_t deviceId = atol(endpoint->getEndpointDomain().c_str());
+        uint16_t port = endpoint->getEndpointPort();
         _endpoint = endpoint;
+        _protocol->makeConnectRequestWithHandler(deviceId, port, [this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
+            if (res.result == (uint32_t)UsbmuxdResult::OK) {
+                _stateMachine.connected();
+            }
+        });
     });
 }
 
+void UsbmuxdConnector::listenDevice() {
+    UsbmuxdListenRequest request = _protocol->makeListenRequestWithHandler([this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
+        if (res.result != (uint32_t)UsbmuxdResult::OK) {
+            _stateMachine.errored();
+        }
+    });
+    getRunloop()->post([this, request]() {
+        ::send(this->_socket, &request, sizeof(request), 0);
+    });
+}
+
+uint32_t UsbmuxdConnector::numberOfAttachDevices() {
+    return this->_devices.size();
+}
+
+std::vector<UsbmuxdDeviceRecord> UsbmuxdConnector::attachedDevices() const {
+    return this->_devices;
+}

@@ -17,11 +17,15 @@ class Endpoint final : public utils::NoCopyable {
 
 public:
 
-    Endpoint(std::string domain, unsigned short port) : _endpointDomain{domain},
+    Endpoint(std::string domain, unsigned short port, bool resolve = true) : _endpointDomain{domain},
                                                _endpointPort{port} {
         try {
-            std::string ip = Endpoint::getIpByDomain(_endpointDomain);
-            _endpointIp = ip;
+            if (resolve) {
+                std::string ip = Endpoint::getIpByDomain(_endpointDomain);
+                _endpointIp = ip;
+            } else {
+                _endpointIp = _endpointDomain;
+            }
         } catch (SocketException e) {
             throw e;
         }
