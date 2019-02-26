@@ -26,15 +26,16 @@ int main(int argc, char *argv[]) {
         }
     };
 
-    socket->mEventHandler = [readHandler](ICommunicator *comm, CommunicatorEvent event) {
+    socket->mEventHandler = [readHandler, listener](ICommunicator *comm, CommunicatorEvent event) {
         if (event == CommunicatorEvent::OpenCompleted) {
             char *helloStr = (char *)malloc(10);
-            strcpy(helloStr, "Hello\n");
             std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(helloStr, 10);
+            strcpy(helloStr, "Hello\n");
             comm->write(data);
         } else if (event == CommunicatorEvent::HasBytesAvailable) {
             comm->read(readHandler);
         } else {
+            listener->getRunloop()->stop();
             comm->getRunloop()->stop();
         }
     };

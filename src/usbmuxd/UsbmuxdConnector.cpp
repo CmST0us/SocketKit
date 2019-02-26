@@ -125,14 +125,15 @@ void UsbmuxdConnector::connect(std::shared_ptr<Endpoint> endpoint) {
     _endpoint = endpoint;
     std::shared_ptr<utils::Data> data = _protocol->makeConnectRequestWithHandler(deviceId, port, [this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
         if (res.result == (uint32_t)UsbmuxdResult::OK) {
-            printf("Connect OK\n");
             _stateMachine.connected();
             if (mEventHandler != nullptr) {
                 mEventHandler(this, UsbmuxdConnectorEvent::Connected, _socket);
             }
         } else {
-            printf("Connect Error\n");
             _stateMachine.errored();
+            if (mEventHandler != nullptr) {
+                mEventHandler(this, UsbmuxdConnectorEvent::Errored, _socket);
+            }
         }
     });
     getRunloop()->post([this, data]() {
