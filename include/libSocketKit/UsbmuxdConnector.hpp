@@ -42,10 +42,10 @@ public:
     int mRetryTimes{3};     //重试次数
 
     using UsbmuxdConnectorEventHandler = std::function<void(UsbmuxdConnector *, UsbmuxdConnectorEvent , SocketFd socket)>;
-    UsbmuxdConnectorEventHandler mEventHandler;
+    UsbmuxdConnectorEventHandler mEventHandler{nullptr};
 
     uint32_t numberOfAttachDevices();
-    std::vector<UsbmuxdDeviceRecord> attachedDevices() const;
+    std::map<uint32_t, UsbmuxdDeviceRecord> attachedDevices() const;
 
     // Step 1.
     void listenDevice();
@@ -56,7 +56,7 @@ private:
     CommunicatorStateMachine _stateMachine;
     std::shared_ptr<Endpoint> _endpoint{nullptr};
     UsbmuxdProtocol *_protocol;
-    std::vector<UsbmuxdDeviceRecord> _devices;
+    std::map<uint32_t, UsbmuxdDeviceRecord> _devices;
 
     void initSocket();
     void initProtocol();

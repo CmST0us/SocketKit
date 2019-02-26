@@ -40,31 +40,38 @@ void UsbmuxdConnector::setupRunloop() {
                 if (FD_ISSET(_socket, &readSet)) {
                     // read event
                     if (_stateMachine.state() == CommunicatorState::Established) {
+                        // connect finish switch socket owner to UsbmuxdSocket
                         runloop->stop();
-                    } else if (_stateMachine.state() == CommunicatorState::Establishing) {
-                        // Check Connect Result
-                        UsbmuxdResultMessage msg = {0};
-                        ::recv(_socket, &msg, sizeof(msg), 0);
-                        _protocol->recvResultMessage(msg);
-                    } else if (_stateMachine.state() == CommunicatorState::Init) {
+                    } else if (_stateMachine.state() == CommunicatorState::Init ||
+                               _stateMachine.state() == CommunicatorState::Establishing) {
                         // Wait Device Record
-                        UsbmuxdDeviceRecordMessage record = {0};
-                        ::recv(_socket, &record, sizeof(record), 0);
-                        printf("Device ID: %d", record.record.deviceId);
+                        UsbmuxdHeader header = {0};
+                        ::recv(_socket, &header, sizeof(header), MSG_PEEK);
+                        uint32_t messageLen = header.length;
+                        uint8_t *data = (uint8_t *)malloc(messageLen);
+                        memset(data, 0, messageLen);
+                        ::recv(_socket, data, messageLen, 0);
+                        _protocol->parsePlistPayloadMessage(header, data + sizeof(header), messageLen - sizeof(header));
+                        free(data);
                     } else {
                         // error
+                        runloop->stop();
                     }
                 } else if (FD_ISSET(_socket, &errorSet)) {
                     // error event
-
+                    runloop->stop();
                 } else {
                     // no event
 
                 }
             } else if (ret < 0) {
                 // error
+                runloop->stop();
+            } else {
+                if (_stateMachine.state() == CommunicatorState::Closed) {
+                    runloop->stop();
+                }
             }
-
             runloop->dispatch();
         }
     };
@@ -112,30 +119,57 @@ void UsbmuxdConnector::closeSocket() {
 }
 
 void UsbmuxdConnector::connect(std::shared_ptr<Endpoint> endpoint) {
-    getRunloop()->post([this, endpoint]() {
-        _stateMachine.connectBegin();
-        uint32_t deviceId = atol(endpoint->getEndpointDomain().c_str());
-        uint16_t port = endpoint->getEndpointPort();
-        _endpoint = endpoint;
-        _protocol->makeConnectRequestWithHandler(deviceId, port, [this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
-            if (res.result == (uint32_t)UsbmuxdResult::OK) {
-                _stateMachine.connected();
-                if (mEventHandler != nullptr) {
-                    mEventHandler(this, UsbmuxdConnectorEvent::Connected, _socket);
-                }
+    _stateMachine.connectBegin();
+    uint32_t deviceId = (uint32_t)atoi(endpoint->getEndpointDomain().c_str());
+    uint16_t port = endpoint->getEndpointPort();
+    _endpoint = endpoint;
+    std::shared_ptr<UsbmuxdPayloadData> data = _protocol->makeConnectRequestWithHandler(deviceId, port, [this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
+        if (res.result == (uint32_t)UsbmuxdResult::OK) {
+            printf("Connect OK\n");
+            _stateMachine.connected();
+            if (mEventHandler != nullptr) {
+                mEventHandler(this, UsbmuxdConnectorEvent::Connected, _socket);
             }
-        });
+        } else {
+            printf("Connect Error\n");
+            _stateMachine.errored();
+        }
+    });
+    getRunloop()->post([this, data]() {
+        ::send(_socket, data->getDataAddress(), data->dataLength(), 0);
     });
 }
 
 void UsbmuxdConnector::listenDevice() {
-    UsbmuxdListenRequest request = _protocol->makeListenRequestWithHandler([this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
+    _protocol->mDeviceRecordHandler = [this](bool isAttach, UsbmuxdDeviceRecord record) {
+        if (isAttach) {
+            _devices[record.deviceId] = record;
+            if (mEventHandler) {
+                mEventHandler(this, UsbmuxdConnectorEvent::DeviceAttached, _socket);
+            }
+        } else {
+            if (_devices.count(record.deviceId) > 0) {
+                _devices.erase(record.deviceId);
+            }
+            if (mEventHandler) {
+                mEventHandler(this, UsbmuxdConnectorEvent::DeviceDetached, _socket);
+            }
+        }
+    };
+
+    std::shared_ptr<UsbmuxdPayloadData> data = _protocol->makeListenRequestWithHandler([this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
         if (res.result != (uint32_t)UsbmuxdResult::OK) {
             _stateMachine.errored();
+            if (mEventHandler) {
+                mEventHandler(this, UsbmuxdConnectorEvent::Errored, _socket);
+            }
+        } else {
+            printf("Listen Request OK\n");
         }
     });
-    getRunloop()->post([this, request]() {
-        ::send(this->_socket, &request, sizeof(request), 0);
+
+    getRunloop()->post([this, data]() {
+        ::send(this->_socket, data->getDataAddress(), data->dataLength(), 0);
     });
 }
 
@@ -143,6 +177,6 @@ uint32_t UsbmuxdConnector::numberOfAttachDevices() {
     return this->_devices.size();
 }
 
-std::vector<UsbmuxdDeviceRecord> UsbmuxdConnector::attachedDevices() const {
+std::map<uint32_t, UsbmuxdDeviceRecord> UsbmuxdConnector::attachedDevices() const {
     return this->_devices;
 }

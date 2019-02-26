@@ -5,9 +5,6 @@ set(BUILD_USBMUXD_COMM ON)
 aux_source_directory(. socket_kit_lib_source)
 aux_source_directory(./TCP socket_kit_lib_source_tcp)
 aux_source_directory(./UDP socket_kit_lib_source_udp)
-if (BUILD_USBMUXD_COMM STREQUAL "ON")
-	aux_source_directory(./usbmuxd socket_kit_lib_source_usbmuxd)
-endif()
 
 # Target
 add_library(
@@ -29,6 +26,19 @@ target_include_directories(SocketKit PRIVATE
     ./UDP
 	./usbmuxd
 )
+
+if (BUILD_USBMUXD_COMM STREQUAL "ON")
+    aux_source_directory(./usbmuxd socket_kit_lib_source_usbmuxd)
+    link_directories(/Users/cmst0us/opt/usr/lib)
+    target_link_libraries(
+            SocketKit PRIVATE
+            plist
+    )
+    target_include_directories(
+            SocketKit PRIVATE
+            /Users/cmst0us/opt/usr/include
+    )
+endif()
 
 # Install
 ## Install Target

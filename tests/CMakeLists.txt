@@ -13,6 +13,7 @@ if (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WINSOCK_DEPRECATED_NO_WARNINGS")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -DDEBUG")
+	link_directories(/Users/cmst0us/opt/usr/lib)
 endif()
 
 add_executable(
@@ -85,6 +86,16 @@ target_link_libraries(
 	test_usbmuxd PRIVATE
 	pthread
 )
+
+target_link_libraries(
+		test_usbmuxd PRIVATE
+		libplist.a
+)
+target_include_directories(
+		test_usbmuxd PRIVATE
+		/Users/cmst0us/opt/usr/include
+)
+
 endif()
 
 

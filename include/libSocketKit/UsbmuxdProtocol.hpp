@@ -66,14 +66,31 @@ struct UsbmuxdDeviceRecord {
     uint32_t deviceId;
     uint16_t productId;
     char serialNumber[256];
-    uint16_t padding;
     uint32_t location;
 } __attribute__((__packed__));
 
-struct UsbmuxdDeviceRecordMessage {
-    UsbmuxdHeader header;
-    UsbmuxdDeviceRecord record;
-} __attribute__((__packed__));
+class UsbmuxdPayloadData final: public utils::NoCopyable {
+private:
+    uint8_t *_data;
+    size_t _size;
+public:
+    UsbmuxdPayloadData(size_t size) : _size{size} {
+        _data = (uint8_t *)malloc(size);
+    };
+    virtual ~UsbmuxdPayloadData() {
+        if (_data) {
+            free(_data);
+            _size = 0;
+            _data = nullptr;
+        }
+    };
+    uint8_t *getDataAddress() {
+        return _data;
+    };
+    size_t dataLength() const {
+        return _size;
+    };
+};
 
 class UsbmuxdProtocol final : public utils::NoCopyable {
 public:
@@ -81,21 +98,24 @@ public:
     virtual ~UsbmuxdProtocol();
 
     using UsbmuxdResultHandler = std::function<void(UsbmuxdHeader req, UsbmuxdResultMessage res)>;
-    // 确认是否有Header
-    using UsbmuxdDeviceRecordHandler = std::function<void(UsbmuxdDeviceRecord record)>;
-    UsbmuxdListenRequest makeListenRequestWithHandler(UsbmuxdResultHandler handler);
-    UsbmuxdConnectRequest makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler);
+    using UsbmuxdDeviceRecordHandler = std::function<void(bool isAttach, UsbmuxdDeviceRecord record)>;
 
-    void parse();
-    void recvResultMessage(UsbmuxdResultMessage msg);
-    void recvDeviceRecordMessage(UsbmuxdDeviceRecord msg);
+    UsbmuxdDeviceRecordHandler mDeviceRecordHandler{nullptr};
+
+    std::shared_ptr<UsbmuxdPayloadData> makeListenRequestWithHandler(UsbmuxdResultHandler handler);
+    std::shared_ptr<UsbmuxdPayloadData> makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler);
+
+    void parsePlistPayloadMessage(UsbmuxdHeader header, uint8_t *data, size_t len);
 private:
     std::map<uint32_t, UsbmuxdHeader> _tagHeaderMap;
     std::map<uint32_t, UsbmuxdResultHandler> _tagHandlerMap;
 
+    uint32_t _tag{0};
 
-    uint32_t _tag{1};
-
+    void parseResultMessage(UsbmuxdHeader header, void *plistObj);
+    void parseAttachMessage(UsbmuxdHeader header, void *plistObj);
+    void parseDetachedMessage(UsbmuxdHeader header, void *plistObj);
+    void parseDeviceRecord(UsbmuxdHeader header, void *plistObj);
 };
 
 }
