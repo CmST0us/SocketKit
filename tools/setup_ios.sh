@@ -1,5 +1,6 @@
 #!/bin/bash
-SOURCE_ROOT=`pwd`
+CURRENT_DIR=`pwd`
+SOURCE_ROOT=$CURRENT_DIR/..
 VENDER_ROOT=$SOURCE_ROOT/..
 
 mkdir -p $VENDER_ROOT/build/include

@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_FOR_IOS "Build For iOS" OFF)
+if (NOT DEFINED BUILD_FOR_IOS)
+	set(BUILD_FOR_IOS OFF)
+endif()
+
 option(DEBUG "Debug Build" ON)
+if (NOT DEFINED DEBUG)
+	set(DEBUG ON)
+endif()
 
 if(BUILD_FOR_IOS STREQUAL "ON")
     set(CMAKE_XCODE_ATTRIBUTE_SDKROOT "iphoneos")
