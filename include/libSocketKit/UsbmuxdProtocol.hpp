@@ -70,6 +70,10 @@ struct UsbmuxdDeviceRecord {
     uint32_t location;
 } __attribute__((__packed__));
 
+struct UsbmuxdDeviceRecordMessage {
+    UsbmuxdHeader header;
+    UsbmuxdDeviceRecord record;
+} __attribute__((__packed__));
 
 class UsbmuxdProtocol final : public utils::NoCopyable {
 public:
@@ -77,10 +81,14 @@ public:
     virtual ~UsbmuxdProtocol();
 
     using UsbmuxdResultHandler = std::function<void(UsbmuxdHeader req, UsbmuxdResultMessage res)>;
+    // 确认是否有Header
+    using UsbmuxdDeviceRecordHandler = std::function<void(UsbmuxdDeviceRecord record)>;
     UsbmuxdListenRequest makeListenRequestWithHandler(UsbmuxdResultHandler handler);
     UsbmuxdConnectRequest makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler);
 
     void parse();
+    void recvResultMessage(UsbmuxdResultMessage msg);
+    void recvDeviceRecordMessage(UsbmuxdDeviceRecord msg);
 private:
     std::map<uint32_t, UsbmuxdHeader> _tagHeaderMap;
     std::map<uint32_t, UsbmuxdResultHandler> _tagHandlerMap;

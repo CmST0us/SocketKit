@@ -43,8 +43,14 @@ void UsbmuxdConnector::setupRunloop() {
                         runloop->stop();
                     } else if (_stateMachine.state() == CommunicatorState::Establishing) {
                         // Check Connect Result
+                        UsbmuxdResultMessage msg = {0};
+                        ::recv(_socket, &msg, sizeof(msg), 0);
+                        _protocol->recvResultMessage(msg);
                     } else if (_stateMachine.state() == CommunicatorState::Init) {
                         // Wait Device Record
+                        UsbmuxdDeviceRecordMessage record = {0};
+                        ::recv(_socket, &record, sizeof(record), 0);
+                        printf("Device ID: %d", record.record.deviceId);
                     } else {
                         // error
                     }
@@ -114,6 +120,9 @@ void UsbmuxdConnector::connect(std::shared_ptr<Endpoint> endpoint) {
         _protocol->makeConnectRequestWithHandler(deviceId, port, [this](UsbmuxdHeader req, UsbmuxdResultMessage res) {
             if (res.result == (uint32_t)UsbmuxdResult::OK) {
                 _stateMachine.connected();
+                if (mEventHandler != nullptr) {
+                    mEventHandler(this, UsbmuxdConnectorEvent::Connected, _socket);
+                }
             }
         });
     });

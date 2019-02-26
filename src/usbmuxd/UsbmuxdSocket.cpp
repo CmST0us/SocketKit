@@ -7,8 +7,9 @@
 using namespace socketkit;
 
 UsbmuxdSocket::UsbmuxdSocket() : _stateMachine{CommunicatorType::Remote} {
-    setupRunloop();
     setupProtocol();
+    setupConnector();
+    setupRunloop();
 }
 
 UsbmuxdSocket::~UsbmuxdSocket() {
@@ -73,8 +74,30 @@ DataType UsbmuxdSocket::communicatorDataType() const {
 }
 
 void UsbmuxdSocket::connect(std::shared_ptr<Endpoint> endpoint) {
-    _connector = std::unique_ptr<UsbmuxdConnector>(new UsbmuxdConnector(_protocol.get()));
     _endpoint = endpoint;
+    _stateMachine.connectBegin();
+    UsbmuxdConnector *connector = _connector.get();
+    connector->connect(endpoint);
+}
+
+const Endpoint* UsbmuxdSocket::connectingEndpoint() const {
+    return _endpoint.get();
+}
+
+const SocketFd UsbmuxdSocket::getSocketFd() const {
+    return _socket;
+}
+
+UsbmuxdConnector* UsbmuxdSocket::getConnector() {
+    return _connector.get();
+}
+
+void UsbmuxdSocket::setupRunloop() {
+
+}
+
+void UsbmuxdSocket::setupConnector() {
+    _connector = std::unique_ptr<UsbmuxdConnector>(new UsbmuxdConnector(_protocol.get()));
     UsbmuxdConnector *connector = _connector.get();
     connector->mEventHandler = [this](UsbmuxdConnector *connector, UsbmuxdConnectorEvent event, SocketFd socket) {
         switch (event) {
@@ -92,27 +115,11 @@ void UsbmuxdSocket::connect(std::shared_ptr<Endpoint> endpoint) {
                 break;
         }
     };
-
-    _stateMachine.connectBegin();
     connector->getRunloop()->run();
-
-    connector->connect(endpoint);
-}
-
-const Endpoint* UsbmuxdSocket::connectingEndpoint() const {
-    return _endpoint.get();
-}
-
-const SocketFd UsbmuxdSocket::getSocketFd() const {
-    return _socket;
-}
-
-void UsbmuxdSocket::setupRunloop() {
-
 }
 
 void UsbmuxdSocket::setupProtocol() {
-    _protocol = std::unique_ptr<UsbmuxdProtocol>(new UsbmuxdProtocol);
+    _protocol = std::unique_ptr<UsbmuxdProtocol>(new UsbmuxdProtocol());
 }
 
 void UsbmuxdSocket::closeSocket() {

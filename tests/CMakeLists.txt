@@ -40,6 +40,8 @@ add_executable(
 	test_usbmuxd
 	test_usbmuxd.cpp
 	../src/usbmuxd/UsbmuxdConnector.cpp
+	../src/usbmuxd/UsbmuxdProtocol.cpp
+	../src/usbmuxd/UsbmuxdSocket.cpp
 	../src/SocketKit.cpp
 	../src/SocketException.cpp
 )

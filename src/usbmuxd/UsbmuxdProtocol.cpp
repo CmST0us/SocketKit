@@ -6,6 +6,14 @@
 
 using namespace socketkit;
 
+UsbmuxdProtocol::UsbmuxdProtocol() {
+
+}
+
+UsbmuxdProtocol::~UsbmuxdProtocol() {
+
+}
+
 UsbmuxdListenRequest UsbmuxdProtocol::makeListenRequestWithHandler(UsbmuxdResultHandler handler) {
     UsbmuxdListenRequest request;
     uint32_t tag = _tag++;
@@ -33,4 +41,19 @@ UsbmuxdConnectRequest UsbmuxdProtocol::makeConnectRequestWithHandler(uint32_t de
     _tagHeaderMap[tag] = request.header;
     _tagHandlerMap[tag] = handler;
     return request;
+}
+
+void UsbmuxdProtocol::recvResultMessage(UsbmuxdResultMessage msg) {
+    if (_tagHeaderMap.count(msg.header.tag) > 0) {
+        if (_tagHandlerMap.count(msg.header.tag) > 0) {
+            UsbmuxdResultHandler handler = _tagHandlerMap[msg.header.tag];
+            handler(_tagHeaderMap[msg.header.tag], msg);
+            _tagHandlerMap.erase(msg.header.tag);
+        }
+        _tagHeaderMap.erase(msg.header.tag);
+    }
+}
+
+void UsbmuxdProtocol::recvDeviceRecordMessage(UsbmuxdDeviceRecord msg) {
+
 }

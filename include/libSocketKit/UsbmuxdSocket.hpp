@@ -28,6 +28,7 @@ public:
 
     unsigned short localPort() const;
     const SocketFd getSocketFd() const;
+    UsbmuxdConnector *getConnector();
 
     CommunicatorEventHandler mEventHandler;
 
@@ -41,6 +42,7 @@ private:
 
     void setupRunloop();
     void setupProtocol();
+    void setupConnector();
     void closeSocket();
 
 };
