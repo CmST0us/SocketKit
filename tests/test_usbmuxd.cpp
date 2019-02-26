@@ -4,38 +4,45 @@
 #include <string>
 
 #include "UsbmuxdSocket.hpp"
+#include "UsbmuxdDeviceListener.hpp"
 
 using namespace socketkit;
 int main(int argc, char *argv[]) {
     std::shared_ptr<socketkit::UsbmuxdSocket> socket = std::make_shared<socketkit::UsbmuxdSocket>();
-    UsbmuxdSocket *socketPtr = socket.get();
-//    socket->getConnector()->listenDevice();
-    socket->getConnector()->mEventHandler = [socketPtr](UsbmuxdConnector *connector, UsbmuxdConnectorEvent event, SocketFd socket) {
-        if (event == UsbmuxdConnectorEvent::Connected) {
-            printf("Connect\n");
-        } else if (event == UsbmuxdConnectorEvent::DeviceAttached) {
-            printf("Device Attach\n");
-            std::map<uint32_t, UsbmuxdDeviceRecord>::iterator it;
-            std::map<uint32_t, UsbmuxdDeviceRecord> attachDevices = connector->attachedDevices();
-            it = attachDevices.begin();
-            if (it != attachDevices.end()) {
-                uint32_t deviceID = it->first;
-                std::stringstream sstr;
-                sstr << deviceID;
+    std::shared_ptr<UsbmuxdDeviceListener> listener = std::make_shared<UsbmuxdDeviceListener>();
 
-                std::shared_ptr<Endpoint> endpoint = std::make_shared<Endpoint>(sstr.str(), 17123, false);
-                socketPtr->connect(endpoint);
-            }
-        } else if (event == UsbmuxdConnectorEvent::DeviceDetached) {
-            printf("Device Detached\n");
-        } else if (event == UsbmuxdConnectorEvent::Errored) {
-            printf("Error \n");
+    auto readHandler = [](ICommunicator *comm, std::shared_ptr<utils::Data> data) {
+        comm->write(data);
+    };
+
+    listener->mDeviceListenerHandler = [socket](bool isAttach, UsbmuxdDeviceRecord record) {
+        if (isAttach) {
+            std::stringstream sstr;
+            sstr << record.deviceId;
+            std::shared_ptr<Endpoint> ep = std::make_shared<Endpoint>(sstr.str(), 17123, false);
+            socket->connect(ep);
+        } else {
+            socket->getRunloop()->stop();
         }
     };
 
-    std::shared_ptr<Endpoint> endpoint = std::make_shared<Endpoint>("11", 17123, false);
-    socket->connect(endpoint);
+    socket->mEventHandler = [readHandler](ICommunicator *comm, CommunicatorEvent event) {
+        if (event == CommunicatorEvent::OpenCompleted) {
+            char *helloStr = (char *)malloc(10);
+            strcpy(helloStr, "Hello\n");
+            std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(helloStr, 10);
+            comm->write(data);
+        } else if (event == CommunicatorEvent::HasBytesAvailable) {
+            comm->read(readHandler);
+        } else {
+            comm->getRunloop()->stop();
+        }
+    };
 
+    listener->getRunloop()->run();
+    socket->getRunloop()->run();
+
+    listener->startListenDevice();
     std::this_thread::sleep_for(std::chrono::seconds(100000));
     return 0;
 }

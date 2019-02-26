@@ -22,7 +22,7 @@ UsbmuxdProtocol::~UsbmuxdProtocol() {
 
 }
 
-std::shared_ptr<UsbmuxdPayloadData> UsbmuxdProtocol::makeListenRequestWithHandler(UsbmuxdResultHandler handler) {
+std::shared_ptr<utils::Data> UsbmuxdProtocol::makeListenRequestWithHandler(UsbmuxdResultHandler handler) {
     UsbmuxdListenRequest request;
     uint32_t tag = _tag++;
     request.header.version = (uint32_t)UsbmuxdProtocolVersion::Plist;
@@ -40,16 +40,16 @@ std::shared_ptr<UsbmuxdPayloadData> UsbmuxdProtocol::makeListenRequestWithHandle
     plist_to_xml(dict, &xml, &xmlLen);
     request.header.length = kUsbmuxdHeaderLength + xmlLen;
 
-    std::shared_ptr<UsbmuxdPayloadData> data = std::make_shared<UsbmuxdPayloadData>(sizeof(request) + xmlLen);
+    std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(sizeof(request) + xmlLen);
     memcpy(data->getDataAddress(), &request, sizeof(request));
-    memcpy(data->getDataAddress() + sizeof(request), xml, xmlLen);
+    memcpy(((uint8_t *)data->getDataAddress()) + sizeof(request), xml, xmlLen);
 
     free(xml);
     plist_free(dict);
     return data;
 }
 
-std::shared_ptr<UsbmuxdPayloadData> UsbmuxdProtocol::makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler) {
+std::shared_ptr<utils::Data> UsbmuxdProtocol::makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler) {
     UsbmuxdHeader header;
     uint32_t tag = _tag++;
     header.tag = tag;
@@ -73,9 +73,9 @@ std::shared_ptr<UsbmuxdPayloadData> UsbmuxdProtocol::makeConnectRequestWithHandl
     plist_to_xml(dict, &xml, &xmlLen);
     header.length = kUsbmuxdHeaderLength + xmlLen;
 
-    std::shared_ptr<UsbmuxdPayloadData> data = std::make_shared<UsbmuxdPayloadData>(kUsbmuxdHeaderLength + xmlLen);
+    std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(kUsbmuxdHeaderLength + xmlLen);
     memcpy(data->getDataAddress(), &header, kUsbmuxdHeaderLength);
-    memcpy(data->getDataAddress() + kUsbmuxdHeaderLength, xml, xmlLen);
+    memcpy(((uint8_t *)data->getDataAddress()) + kUsbmuxdHeaderLength, xml, xmlLen);
 
     free(xml);
     plist_free(dict);

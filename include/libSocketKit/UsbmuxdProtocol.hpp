@@ -7,7 +7,9 @@
 #include <functional>
 #include <map>
 #include <vector>
+
 #include "NoCopyable.hpp"
+#include "Data.hpp"
 
 #define kUsbmuxdHeaderLength (16)
 
@@ -69,29 +71,6 @@ struct UsbmuxdDeviceRecord {
     uint32_t location;
 } __attribute__((__packed__));
 
-class UsbmuxdPayloadData final: public utils::NoCopyable {
-private:
-    uint8_t *_data;
-    size_t _size;
-public:
-    UsbmuxdPayloadData(size_t size) : _size{size} {
-        _data = (uint8_t *)malloc(size);
-    };
-    virtual ~UsbmuxdPayloadData() {
-        if (_data) {
-            free(_data);
-            _size = 0;
-            _data = nullptr;
-        }
-    };
-    uint8_t *getDataAddress() {
-        return _data;
-    };
-    size_t dataLength() const {
-        return _size;
-    };
-};
-
 class UsbmuxdProtocol final : public utils::NoCopyable {
 public:
     UsbmuxdProtocol();
@@ -102,8 +81,8 @@ public:
 
     UsbmuxdDeviceRecordHandler mDeviceRecordHandler{nullptr};
 
-    std::shared_ptr<UsbmuxdPayloadData> makeListenRequestWithHandler(UsbmuxdResultHandler handler);
-    std::shared_ptr<UsbmuxdPayloadData> makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler);
+    std::shared_ptr<utils::Data> makeListenRequestWithHandler(UsbmuxdResultHandler handler);
+    std::shared_ptr<utils::Data> makeConnectRequestWithHandler(uint32_t deviceId, uint16_t port, UsbmuxdResultHandler handler);
 
     void parsePlistPayloadMessage(UsbmuxdHeader header, uint8_t *data, size_t len);
 private:

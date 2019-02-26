@@ -88,12 +88,80 @@ const SocketFd UsbmuxdSocket::getSocketFd() const {
     return _socket;
 }
 
-UsbmuxdConnector* UsbmuxdSocket::getConnector() {
-    return _connector.get();
-}
-
 void UsbmuxdSocket::setupRunloop() {
+    auto workRunloop = [this](utils::Runloop *runloop) {
+        while(!runloop->isCanceled()) {
+            if (_stateMachine.state() != CommunicatorState::Established) {
+                if (_stateMachine.state() == CommunicatorState::Closed) {
+                    runloop->stop();
+                }
+                runloop->dispatch(true);
+                continue;
+            }
 
+            fd_set readSet;
+            fd_set writeSet;
+            fd_set errorSet;
+            FD_ZERO(&readSet);
+//            FD_ZERO(&writeSet);
+            FD_ZERO(&errorSet);
+            FD_SET(_socket, &readSet);
+//            FD_SET(_socket, &writeSet);
+            FD_SET(_socket, &errorSet);
+
+            struct timeval tv;
+            tv.tv_sec = 1;
+            tv.tv_usec = 0;
+
+            int ret = ::select(_socket + 1, &readSet, NULL, &errorSet, &tv);
+            if (ret > 0) {
+                // socket have event
+                if (FD_ISSET(_socket, &readSet)) {
+                    // can read;
+                    // peek 1 byte to check if socket closed;
+                    uchar peekByte = {0};
+#if _WIN32
+                    int recvLen = ::recv(_socket, (char *)&peekByte, 1, MSG_PEEK);
+#else
+                    int recvLen = ::recv(_socket, &peekByte, 1, MSG_PEEK);
+#endif
+                    if (recvLen == 0) {
+                        // endpoint write closed;
+                        // close read
+                        _stateMachine.readClosed();
+                        mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::EndEncountered);
+                    } else if (recvLen < 0) {
+                        _stateMachine.errored();
+                        mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+                    } else {
+                        mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::HasBytesAvailable);
+                    }
+                } else if (FD_ISSET(_socket, &writeSet)) {
+                    // can write
+                    mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::HasSpaceAvailable);
+                } else if (FD_ISSET(_socket, &errorSet)) {
+                    // error
+                    _stateMachine.errored();
+                    closeSocket();
+                    mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+                } else {
+                    // no event
+                    mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::None);
+                }
+            } else if (ret < 0) {
+                // error happen
+                _stateMachine.errored();
+                closeSocket();
+                mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+            }
+
+            runloop->dispatch();
+        }
+
+        closeSocket();
+    };
+
+    _runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop(workRunloop));
 }
 
 void UsbmuxdSocket::setupConnector() {

@@ -18,14 +18,6 @@ enum class UsbmuxdConnectorEvent {
     Errored
 };
 
-enum class UsbmuxdConnectorState {
-    Command, // waiting for command
-    Listen, // listening for devices
-    Connecting, // issued connection request
-    Connected, // connected
-    Dead
-};
-
 class UsbmuxdConnector final : public utils::IAsync {
 
 public:
@@ -33,7 +25,6 @@ public:
     virtual ~UsbmuxdConnector();
     virtual utils::Runloop *getRunloop() override;
 
-    // Step 2.
     void connect(std::shared_ptr<Endpoint> endpoint);
 
 public:
@@ -44,19 +35,12 @@ public:
     using UsbmuxdConnectorEventHandler = std::function<void(UsbmuxdConnector *, UsbmuxdConnectorEvent , SocketFd socket)>;
     UsbmuxdConnectorEventHandler mEventHandler{nullptr};
 
-    uint32_t numberOfAttachDevices();
-    std::map<uint32_t, UsbmuxdDeviceRecord> attachedDevices() const;
-
-    // Step 1.
-    void listenDevice();
-
 private:
     SocketFd _socket{(SocketFd)-1};
     std::unique_ptr<utils::Runloop> _runloop;
     CommunicatorStateMachine _stateMachine;
     std::shared_ptr<Endpoint> _endpoint{nullptr};
     UsbmuxdProtocol *_protocol;
-    std::map<uint32_t, UsbmuxdDeviceRecord> _devices;
 
     void initSocket();
     void initProtocol();

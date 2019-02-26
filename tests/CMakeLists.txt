@@ -43,6 +43,7 @@ add_executable(
 	../src/usbmuxd/UsbmuxdConnector.cpp
 	../src/usbmuxd/UsbmuxdProtocol.cpp
 	../src/usbmuxd/UsbmuxdSocket.cpp
+	../src/usbmuxd/UsbmuxdDeviceListener.cpp
 	../src/SocketKit.cpp
 	../src/SocketException.cpp
 )
