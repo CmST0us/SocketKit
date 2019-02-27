@@ -45,3 +45,5 @@ CMakeSettings.json
 .idea
 cmake-build*
 
+# vendor
+vendor/build/*

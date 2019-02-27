@@ -28,6 +28,7 @@ typedef int socklen_t;
 #include <sys/fcntl.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <sys/un.h>
 
 typedef int SocketFd;
 #endif

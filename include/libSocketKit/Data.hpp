@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include <string.h>
 #include "NoCopyable.hpp"
 
 namespace socketkit {
@@ -32,7 +32,7 @@ public:
         if (size > _size) {
             return false;
         }
-        ::memcpy(_ptr, src, size);
+        memcpy(_ptr, src, size);
         return true;
     }
 
