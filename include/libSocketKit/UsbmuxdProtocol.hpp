@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <memory>
 
 #include "NoCopyable.hpp"
 #include "Data.hpp"
