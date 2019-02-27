@@ -85,8 +85,9 @@ std::shared_ptr<utils::Data> UsbmuxdProtocol::makeConnectRequestWithHandler(uint
 
 
 void UsbmuxdProtocol::parsePlistPayloadMessage(UsbmuxdHeader header, uint8_t *data, size_t len) {
-    plist_t plistObj;
+    plist_t plistObj = nullptr;
     plist_from_xml((const char *)data, len, &plistObj);
+    if (plistObj == nullptr) return;
 
     // dispatch Message Type
     plist_t messageType = plist_dict_get_item(plistObj, kUsbmuxdProtocolMessageTypeKey);
@@ -101,7 +102,7 @@ void UsbmuxdProtocol::parsePlistPayloadMessage(UsbmuxdHeader header, uint8_t *da
     } else if (plist_compare_node_value(messageType, detachedString)) {
         parseDetachedMessage(header, plistObj);
     }
-
+    
     plist_free(plistObj);
 }
 
