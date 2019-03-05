@@ -13,7 +13,7 @@ UsbmuxdSocket::UsbmuxdSocket() : _stateMachine{CommunicatorType::Remote} {
 }
 
 UsbmuxdSocket::~UsbmuxdSocket() {
-
+    getRunloop()->stop();
 }
 
 utils::Runloop* UsbmuxdSocket::getRunloop() {
