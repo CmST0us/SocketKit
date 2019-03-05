@@ -11,7 +11,5 @@ make clean
 make
 make install
 
-cp -r $BUILD_DIR/include/plist $CURRENT_DIR/../../build/include
-cp $BUILD_DIR/lib/libplist.a $CURRENT_DIR/../../build/lib/
 
 

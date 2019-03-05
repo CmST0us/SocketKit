@@ -16,23 +16,6 @@ aux_source_directory(./UDP socket_kit_lib_source_udp)
 
 if (BUILD_USBMUXD_COMM STREQUAL "ON")
     aux_source_directory(./usbmuxd socket_kit_lib_source_usbmuxd)
-    execute_process(
-        COMMAND
-        rm -rf ../vendor/build
-    )
-
-    if (BUILD_CROSS_COMPILE STREQUAL "ON")
-        execute_process(
-            COMMAND
-            ../tools/x_build_libplist.sh
-        )
-    else()
-        execute_process(
-            COMMAND
-            ../tools/build_libplist.sh
-        )
-    endif()
-    
 endif()
 
 link_directories(../vendor/build/lib)

@@ -10,8 +10,3 @@ make clean
 ./autogen.sh --prefix=$BUILD_DIR --host=arm-none-linux-gnueabihf --without-cython
 make
 make install
-
-cp -r $BUILD_DIR/include/plist $CURRENT_DIR/../../Vendor/build
-cp $BUILD_DIR/lib/libplist.a $CURRENT_DIR/../../Vendor/lib
-
-
