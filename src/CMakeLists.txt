@@ -5,6 +5,11 @@ if (NOT DEFINED BUILD_USBMUXD_COMM)
     set(BUILD_USBMUXD_COMM OFF)
 endif()
 
+option(BUILD_CROSS_COMPILE "Cross Compile Build" OFF)
+if (NOT DEFINED BUILD_CROSS_COMPILE)
+    set(BUILD_CROSS_COMPILE OFF)
+endif()
+
 aux_source_directory(. socket_kit_lib_source)
 aux_source_directory(./TCP socket_kit_lib_source_tcp)
 aux_source_directory(./UDP socket_kit_lib_source_udp)
@@ -15,10 +20,19 @@ if (BUILD_USBMUXD_COMM STREQUAL "ON")
         COMMAND
         rm -rf ../vendor/build
     )
-    execute_process(
-        COMMAND
-        ../tools/build_libplist.sh
-    )
+
+    if (BUILD_CROSS_COMPILE STREQUAL "ON")
+        execute_process(
+            COMMAND
+            ../tools/x_build_libplist.sh
+        )
+    else()
+        execute_process(
+            COMMAND
+            ../tools/build_libplist.sh
+        )
+    endif()
+    
 endif()
 
 link_directories(../vendor/build/lib)
@@ -41,9 +55,10 @@ target_include_directories(SocketKit PRIVATE
     .
     ./TCP
     ./UDP
-	./usbmuxd
+    ./usbmuxd
     ../vendor/build/include
 )
+
 
 # Install
 ## Install Target
