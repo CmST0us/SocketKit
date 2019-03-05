@@ -25,6 +25,10 @@ public:
     }
 
     const int getDataSize() const {
+        return _dataSize;
+    }
+
+    const int getSize() const {
         return _size;
     }
 
@@ -33,11 +37,13 @@ public:
             return false;
         }
         memcpy(_ptr, src, size);
+        _dataSize = size;
         return true;
     }
 
     void clear() {
         memset(_ptr, 0, _size);
+        _dataSize = 0;
     }
 
     void expansion(int newSize) {
@@ -48,6 +54,9 @@ public:
         clear();
     }
 
+    void setDataSize(int size) {
+        _dataSize = size;
+    }
 
     ~Data() {
         if (_ptr != nullptr) {
@@ -55,10 +64,12 @@ public:
         }
         _ptr = nullptr;
         _size = 0;
+        _dataSize = 0;
     }
 private:
     void *_ptr{nullptr};
     int _size{0};
+    int _dataSize{0};
 };
 
 };

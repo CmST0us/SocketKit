@@ -13,7 +13,7 @@ UsbmuxdSocket::UsbmuxdSocket() : _stateMachine{CommunicatorType::Remote} {
 }
 
 UsbmuxdSocket::~UsbmuxdSocket() {
-    getRunloop()->stop();
+
 }
 
 utils::Runloop* UsbmuxdSocket::getRunloop() {
@@ -62,6 +62,13 @@ void UsbmuxdSocket::closeWrite() {
         _stateMachine.writeCloseBegin();
         ::shutdown(_socket, SHUT_WR);
         _stateMachine.writeCloseEnd();
+    });
+}
+
+void UsbmuxdSocket::close() {
+    getRunloop()->post([this]() {
+        _stateMachine.closed();
+        this->closeSocket();
     });
 }
 
@@ -173,13 +180,20 @@ void UsbmuxdSocket::setupConnector() {
                 _socket = socket;
                 _stateMachine.connected();
                 mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::OpenCompleted);
-                connector->getRunloop()->post([connector]() {
-                    connector->getRunloop()->stop();
+                // post 一个空任务唤醒runloop，防止socket传递之后没有任何操作就关闭，然后导致EOF不回调
+                _runloop->post([]() {
+
                 });
+                connector->getRunloop()->stop();
                 break;
             default:
                 _stateMachine.errored();
                 mEventHandler((ICommunicator *)(IRemoteCommunicator *)this, CommunicatorEvent::ErrorOccurred);
+                // post 一个空任务唤醒runloop，防止socket传递之后没有任何操作就关闭，然后导致EOF不回调
+                _runloop->post([]() {
+
+                });
+                connector->getRunloop()->stop();
                 break;
         }
     };

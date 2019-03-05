@@ -14,7 +14,7 @@ TCPSocket::TCPSocket(SocketFd socket, std::shared_ptr<Endpoint> ep) : _socket{so
 }
 
 TCPSocket::~TCPSocket() {
-    
+
 }
 
 utils::Runloop* TCPSocket::getRunloop() {
@@ -63,6 +63,13 @@ void TCPSocket::closeWrite() {
         _stateMachine.writeCloseBegin();
         ::shutdown(_socket, SHUT_WR);
         _stateMachine.writeCloseEnd();
+    });
+}
+
+void TCPSocket::close() {
+    getRunloop()->post([this]() {
+        _stateMachine.closed();
+        this->closeSocket();
     });
 }
 

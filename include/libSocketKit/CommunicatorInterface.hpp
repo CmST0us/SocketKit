@@ -46,6 +46,7 @@ public:
     virtual void read(DataEventHandler handler) = 0;
     virtual void write(std::shared_ptr<utils::Data> data) = 0;
     virtual void closeWrite() = 0;
+    virtual void close() = 0;
 
     virtual const CommunicatorStateMachine& stateMachine() const = 0;
     virtual DataType communicatorDataType() const = 0;

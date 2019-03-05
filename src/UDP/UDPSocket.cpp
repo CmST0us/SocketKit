@@ -68,6 +68,12 @@ void UDPSocket::closeWrite() {
     });
 }
 
+void UDPSocket::close() {
+    getRunloop()->post([this]() {
+        _stateMachine.closed();
+    });
+}
+
 const CommunicatorStateMachine& UDPSocket::stateMachine() const {
     return _stateMachine;
 }

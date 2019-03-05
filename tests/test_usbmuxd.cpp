@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
         } else if (event == CommunicatorEvent::HasBytesAvailable) {
             comm->read(readHandler);
         } else {
+            comm->close();
             comm->getRunloop()->stop();
         }
     };

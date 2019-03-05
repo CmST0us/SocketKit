@@ -19,6 +19,7 @@ public:
     virtual void read(DataEventHandler handler) override;
     virtual void write(std::shared_ptr<utils::Data> data) override;
     virtual void closeWrite() override;
+    virtual void close() override;
     virtual const CommunicatorStateMachine& stateMachine() const override;
     virtual DataType communicatorDataType() const override;
 

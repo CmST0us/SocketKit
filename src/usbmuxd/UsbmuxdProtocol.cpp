@@ -43,6 +43,7 @@ std::shared_ptr<utils::Data> UsbmuxdProtocol::makeListenRequestWithHandler(Usbmu
     std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(sizeof(request) + xmlLen);
     memcpy(data->getDataAddress(), &request, sizeof(request));
     memcpy(((uint8_t *)data->getDataAddress()) + sizeof(request), xml, xmlLen);
+    data->setDataSize(sizeof(request) + xmlLen);
 
     free(xml);
     plist_free(dict);
@@ -76,6 +77,7 @@ std::shared_ptr<utils::Data> UsbmuxdProtocol::makeConnectRequestWithHandler(uint
     std::shared_ptr<utils::Data> data = std::make_shared<utils::Data>(kUsbmuxdHeaderLength + xmlLen);
     memcpy(data->getDataAddress(), &header, kUsbmuxdHeaderLength);
     memcpy(((uint8_t *)data->getDataAddress()) + kUsbmuxdHeaderLength, xml, xmlLen);
+    data->setDataSize(kUsbmuxdHeaderLength + xmlLen);
 
     free(xml);
     plist_free(dict);

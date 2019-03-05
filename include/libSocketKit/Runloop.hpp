@@ -67,8 +67,13 @@ public:
             if (wait) {
                 std::unique_lock<std::mutex> locker(_taskQueuePushLock);
                 _notEmpty.wait(locker, [this](){
-                    return !_taskQueue.empty();
+                    // !!! 如果一个Runloop启动，并开始等待操作，此时会阻塞线程，
+                    // 在一个操作到来之前不会结束，故这里需要添加_cancel判断是否应该继续等待
+                    return !_taskQueue.empty() || _canceled;
                 });
+            }
+            if (_canceled) {
+                return;;
             }
         } else {
             while (!_taskQueue.empty()) {
