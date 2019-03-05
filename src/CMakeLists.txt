@@ -13,6 +13,10 @@ if (BUILD_USBMUXD_COMM STREQUAL "ON")
     aux_source_directory(./usbmuxd socket_kit_lib_source_usbmuxd)
     execute_process(
         COMMAND
+        rm -rf ../vendor/build
+    )
+    execute_process(
+        COMMAND
         ../tools/build_libplist.sh
     )
 endif()
