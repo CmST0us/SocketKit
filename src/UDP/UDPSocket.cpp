@@ -49,16 +49,14 @@ void UDPSocket::read(DataEventHandler handler) {
 }
 
 void UDPSocket::write(std::shared_ptr<utils::Data> data) {
-    getRunloop()->post([this, data]() {
-        _stateMachine.writeBegin();
-        sockaddr_in sockaddrIn = _endpoint->getEndpointSockaddrIn();
+    _stateMachine.writeBegin();
+    sockaddr_in sockaddrIn = _endpoint->getEndpointSockaddrIn();
 #if _WIN32
-        ::sendto(_socket, (char *)data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+    ::sendto(_socket, (char *)data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #else
-        ::sendto(_socket, data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
+    ::sendto(_socket, data->getDataAddress(), data->getDataSize(), 0, (struct sockaddr *)&sockaddrIn, sizeof(sockaddrIn));
 #endif
-        _stateMachine.writeEnd();
-    });
+    _stateMachine.writeEnd();
 }
 
 void UDPSocket::closeWrite() {
