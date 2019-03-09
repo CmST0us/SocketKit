@@ -46,15 +46,13 @@ void UsbmuxdSocket::read(DataEventHandler handler) {
 }
 
 void UsbmuxdSocket::write(std::shared_ptr<utils::Data> data) {
-    getRunloop()->post([this, data](){
-        _stateMachine.writeBegin();
+    _stateMachine.writeBegin();
 #if _WIN32
-        ::send(_socket, (const char *)data->getDataAddress(), (int)data->getDataSize(), 0);
+    ::send(_socket, (const char *)data->getDataAddress(), (int)data->getDataSize(), 0);
 #else
-        ::send(_socket, data->getDataAddress(), data->getDataSize(), 0);
+    ::send(_socket, data->getDataAddress(), data->getDataSize(), 0);
 #endif
-        _stateMachine.writeEnd();
-    });
+    _stateMachine.writeEnd();
 }
 
 void UsbmuxdSocket::closeWrite() {
