@@ -7,6 +7,6 @@ mkdir -p $BUILD_DIR
 cd $VENDOR_DIR/libplist
 make distclean
 make clean
-./autogen.sh --prefix=$BUILD_DIR --host=arm-linux-gnueabihf --without-cython
+./autogen.sh --prefix=$BUILD_DIR --host=arm-none-linux-gnueabihf --without-cython
 make
 make install
