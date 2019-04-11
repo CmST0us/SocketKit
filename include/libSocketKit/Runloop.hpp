@@ -9,6 +9,7 @@
 #include <future>
 #include <condition_variable>
 
+#include "SocketKit.hpp"
 #include "NoCopyable.hpp"
 
 namespace socketkit {
@@ -21,7 +22,16 @@ public:
 
     Runloop() = default;
     Runloop(RunloopHandler handler) : _runloopHandler{handler} {
-
+        _innerSocket = ::socket(PF_INET, SOCK_DGRAM, 0);
+        struct sockaddr_in innerAddr;
+        innerAddr.sin_family = AF_INET;
+        innerAddr.sin_port = 0;
+        innerAddr.sin_addr.s_addr = INADDR_LOOPBACK;
+        int ret = ::bind(_innerSocket, (const sockaddr *)&innerAddr, sizeof(innerAddr));
+        if (ret != 0) {
+            printf("error");
+        }
+        _innerPort = ntohs(innerAddr.sin_port);
     }
 
     ~Runloop() {
@@ -58,6 +68,7 @@ public:
         _taskQueuePushLock.lock();
         _taskQueue.push(task);
         _notEmpty.notify_all();
+        notifyEvent();
         _taskQueuePushLock.unlock();
     }
 
@@ -103,6 +114,15 @@ private:
     volatile AtomBool _canceled{false};
     AtomBool _running{false};
 
+    SocketFd _innerSocket{ -1 };
+    short _innerPort{ 0 };
+    void notifyEvent() {
+        struct sockaddr_in target;
+        target.sin_addr.s_addr = INADDR_LOOPBACK;
+        target.sin_family = AF_INET;
+        target.sin_port = htons(_innerPort);
+        ::sendto(_innerSocket, "", 0, 0, (const sockaddr*)&target, sizeof(target));
+    }
 };
 };
 };
