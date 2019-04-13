@@ -6,12 +6,14 @@
 
 #include "TCPSocket.hpp"
 #include "TCPAcceptor.hpp"
+#include "Runloop.hpp"
 
 #define TEST_TCP_LOCAL_PORT 12003
 #define TEST_TCP_REMOTE_PORT 12004
 
 using namespace socketkit;
-int main(int argc, char* argv[]) {
+
+void oldRunloop() {
     initialize();
     std::unique_ptr<utils::Runloop> runloop = std::unique_ptr<utils::Runloop>(new utils::Runloop());
     utils::Runloop *runloopPtr = runloop.get();
@@ -48,8 +50,8 @@ int main(int argc, char* argv[]) {
     };
 
     tcp->mEventHandler = eh;
-     tcp->getRunloop()->run();
-    
+    tcp->getRunloop()->run();
+
     std::shared_ptr<Endpoint> ep = std::make_shared<Endpoint>("127.0.0.1", TEST_TCP_REMOTE_PORT);
     tcp->connect(ep);
 
@@ -87,5 +89,8 @@ int main(int argc, char* argv[]) {
     acceptor->mEventHandler = aep;
 
     std::this_thread::sleep_for(std::chrono::seconds(100));
+}
+int main(int argc, char* argv[]) {
+    
     return 0;
 }

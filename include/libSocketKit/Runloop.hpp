@@ -6,11 +6,13 @@
 
 #include <queue>
 #include <thread>
+#include <map>
 #include <future>
 #include <condition_variable>
 
 #include "SocketKit.hpp"
 #include "NoCopyable.hpp"
+#include "CommunicatorInterface.hpp"
 
 namespace socketkit {
 namespace utils {
@@ -32,6 +34,9 @@ public:
             printf("error");
         }
         _innerPort = ntohs(innerAddr.sin_port);
+        FD_ZERO(&_readSet);
+        FD_ZERO(&_writeSet);
+        FD_ZERO(&_errorSet);
     }
 
     ~Runloop() {
@@ -61,7 +66,74 @@ public:
             _running = false;
             return true;
         });
+    }
 
+    CommunicatorPipeStatus checkPipeStatus(SocketFd socket) {
+        // peek 1 byte to check if socket close;
+        uchar peekByte = { 0 };
+#if _WIN32
+        int recvLen = ::recv(socket, (char *)&peekByte, 1, MSG_PEEK);
+#else
+        int recvLen = ::recv(socket, &peekByte, 1, MSG_PEEK);
+#endif
+        if (recvLen == 0) {
+            return CommunicatorPipeStatus::Closed;
+        } else if (recvLen < 0) {
+            return CommunicatorPipeStatus::Error;
+        }
+        return CommunicatorPipeStatus::Normal;
+    }
+
+    void waitForNotify() {
+        fd_set readSet = _readSet;
+        fd_set writeSet = _writeSet;
+        fd_set errorSet = _errorSet;
+
+        struct timeval tv;
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+
+        int ret = ::select(_observedSocketHandler.size(), &readSet, NULL, &errorSet, &tv);
+        if (ret == 0) {
+            // timeout
+        } else if(ret < 0){
+            // error
+        } else {
+            // event
+            for (auto iter = _observedSocketHandler.begin(); iter != _observedSocketHandler.end(); ++iter) {
+                SocketFd fd = iter->first;
+                std::weak_ptr<socketkit::ICommunicator> handler = iter->second;
+                auto h = handler.lock();
+                if (FD_ISSET(fd, &readSet)) {
+                    // read event
+                    CommunicatorPipeStatus status = checkPipeStatus(fd);
+                    if (status == CommunicatorPipeStatus::Closed) {
+                        // EOF
+                        h->mutableStateMachine().readClosed();
+                        h->getEventHandler()(h.get(), CommunicatorEvent::EndEncountered);
+                    } else if (status == CommunicatorPipeStatus::Error) {
+                        h->mutableStateMachine().errored();
+                        h->getEventHandler()(h.get(), CommunicatorEvent::ErrorOccurred);
+                    } else {
+                        h->getEventHandler()(h.get(), CommunicatorEvent::HasBytesAvailable);
+                    }
+                } else if (FD_ISSET(fd, &writeSet)) {
+                    // write event
+                    h->getEventHandler()(h.get(), CommunicatorEvent::HasSpaceAvailable);
+                } else if (FD_ISSET(fd, &errorSet)) {
+                    // error event
+                    h->mutableStateMachine().errored();
+                    h->getEventHandler()(h.get(), CommunicatorEvent::ErrorOccurred);
+                }
+            }
+        }
+    }
+
+    void observerSocket(SocketFd socket, std::weak_ptr<socketkit::ICommunicator> observer) {
+        FD_SET(socket, &_readSet);
+        FD_SET(socket, &_writeSet);
+        FD_SET(socket, &_errorSet);
+        _observedSocketHandler[socket] = observer;
     }
 
     void post(RunloopTaskHandler task) {
@@ -114,8 +186,14 @@ private:
     volatile AtomBool _canceled{false};
     AtomBool _running{false};
 
+    fd_set _readSet;
+    fd_set _errorSet;
+    fd_set _writeSet;
+    std::map< SocketFd, std::weak_ptr<socketkit::ICommunicator> > _observedSocketHandler;
+
     SocketFd _innerSocket{ -1 };
     short _innerPort{ 0 };
+
     void notifyEvent() {
         struct sockaddr_in target;
         target.sin_addr.s_addr = INADDR_LOOPBACK;
@@ -123,6 +201,7 @@ private:
         target.sin_port = htons(_innerPort);
         ::sendto(_innerSocket, "", 0, 0, (const sockaddr*)&target, sizeof(target));
     }
+
 };
 };
 };

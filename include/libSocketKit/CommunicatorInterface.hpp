@@ -36,9 +36,16 @@ enum class DataType {
     Packet
 };
 
+enum class CommunicatorPipeStatus {
+    Normal,
+    Closed,
+    Error,
+};
+
 // [TODO] 写函数需要异步传递数据，需要一个std::shared_ptr<utils::Buffer>
 class ICommunicator: public utils::IAsync {
 public:
+    friend utils::Runloop;
     using DataEventHandler = std::function<void(ICommunicator *, std::shared_ptr<utils::Data> data)>;
     using CommunicatorEventHandler = std::function<void(ICommunicator *, CommunicatorEvent event)>;
 
@@ -50,6 +57,10 @@ public:
 
     virtual const CommunicatorStateMachine& stateMachine() const = 0;
     virtual DataType communicatorDataType() const = 0;
+
+protected:
+    virtual CommunicatorEventHandler getEventHandler() = 0;
+    virtual CommunicatorStateMachine& mutableStateMachine() = 0
 };
 
 class IRemoteCommunicator : public ICommunicator {

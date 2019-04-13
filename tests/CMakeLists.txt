@@ -47,6 +47,10 @@ add_executable(
 	../src/SocketKit.cpp
 	../src/SocketException.cpp
 )
+target_include_directories(
+	test_usbmuxd PUBLIC
+	../include/libSocketKit
+)
 endif()
 
 target_include_directories(
@@ -57,11 +61,6 @@ target_include_directories(
 target_include_directories(
     test_udpsocket PUBLIC
     ../include/libSocketKit
-)
-
-target_include_directories(
-	test_usbmuxd PUBLIC
-	../include/libSocketKit
 )
 
 if (WIN32)
